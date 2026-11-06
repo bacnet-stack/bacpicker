@@ -133,6 +133,7 @@ async def run(config: RunConfig, epics: Optional[Epics] = None, generate: Option
     )
     app = build_application(config)
     try:
+        await app.listen_for_broadcasts()
         try:
             address, i_am = await discover_iut(app, config)
         except DiscoveryError as err:
