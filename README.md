@@ -54,7 +54,7 @@ Common options:
 
 | Option | Purpose |
 |---|---|
-| `-a, --address` | Local BACnet/IP address, e.g. `192.168.1.10/24` or `192.168.1.10/24:47809` |
+| `-a, --address` | Local BACnet/IP address, e.g. `192.168.1.10/24` or `192.168.1.10/24:47809`. Without a port, BACpicker binds UDP 47823 (0xBACF) and sends broadcasts to 47808 (0xBAC0), so it can run on the same host as a device. With an explicit port, broadcasts go to that port. |
 | `-d, --device-instance` | IUT device instance |
 | `-t, --target` | IUT address; Who-Is is sent directly to it |
 | `--unicast` | Send Who-Is/Who-Has to `--target` instead of broadcasting |

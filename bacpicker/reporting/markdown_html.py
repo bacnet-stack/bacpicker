@@ -101,7 +101,7 @@ def _html_result(r: TestResult) -> str:
         rows.append(f"<pre>{html.escape(r.reason)}</pre>")
     steps = "".join(f"<li>{html.escape(s)}</li>" for s in r.steps)
     if steps:
-        rows.append(f"<details><summary>steps</summary><ol>{steps}</ol></details>")
+        rows.append(f"<details><summary>steps</summary><ul class='steps'>{steps}</ul></details>")
     return (
         f"<tr class='{r.status.value}'><td>{html.escape(r.clause)}</td>"
         f"<td>{html.escape(r.title)}</td><td>{r.status.value}</td>"
@@ -129,6 +129,7 @@ td, th {{ border: 1px solid #ccc; padding: 4px 8px; text-align: left; vertical-a
 tr.PASS td:nth-child(3) {{ color: #080; }} tr.FAIL td:nth-child(3) {{ color: #c00; font-weight: bold; }}
 tr.ERROR td:nth-child(3) {{ color: #909; font-weight: bold; }} tr.SKIP td:nth-child(3) {{ color: #a60; }}
 .defect {{ margin-bottom: .5em; }} .warn {{ color: #a60; }} code {{ white-space: pre-wrap; }}
+ul.steps {{ list-style: none; padding-left: 1em; }} ul.steps li {{ white-space: pre-wrap; }}
 </style></head><body>
 <h1>BACnet Conformance Test Report</h1>
 <p>Standard: {html.escape(report.edition)} &middot; tool {html.escape(report.tool_version)}

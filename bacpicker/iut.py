@@ -6,12 +6,16 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import logging
+import re
 from typing import Any, Callable, List, Optional, Tuple
 
 from bacpypes3.apdu import APDU, ErrorRejectAbortNack, IAmRequest, ReadPropertyRequest
 from bacpypes3.app import Application
-from bacpypes3.pdu import Address, GlobalBroadcast
+from bacpypes3.ipv4 import IPv4DatagramProtocol
+from bacpypes3.ipv4.link import NormalLinkLayer
+from bacpypes3.pdu import Address, GlobalBroadcast, LocalBroadcast
 from bacpypes3.primitivedata import BitString
 
 from .config import RunConfig
@@ -19,6 +23,9 @@ from .context import DeviceProfile
 from .standard import object_type_bits, service_bits
 
 log = logging.getLogger(__name__)
+
+BACNET_PORT = 0xBAC0  # destination port for broadcasts
+DEFAULT_LOCAL_PORT = 0xBACF  # lets the tester run beside a device that owns 0xBAC0
 
 
 class DiscoveryError(Exception):
@@ -31,6 +38,45 @@ class TesterApplication(Application):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._listeners: List[Callable[[APDU], None]] = []
+        self._extra_transports: List[asyncio.BaseTransport] = []
+        self.broadcast_port_redirected = False
+
+    def close(self) -> None:
+        for transport in self._extra_transports:
+            transport.close()
+        super().close()
+
+    async def listen_for_broadcasts(self) -> None:
+        """Also receive broadcasts sent to BACNET_PORT; skipped with a warning if another process owns it."""
+        loop = asyncio.get_running_loop()
+        if not self.broadcast_port_redirected:
+            return
+        for server in self.broadcast_servers():
+
+            def factory(server: Any = server) -> IPv4DatagramProtocol:
+                protocol = IPv4DatagramProtocol()
+                protocol.server = server
+                return protocol
+
+            try:
+                transport, protocol = await loop.create_datagram_endpoint(
+                    factory, local_addr=server.broadcast_address, allow_broadcast=True, reuse_port=True
+                )
+            except OSError as err:
+                log.warning(
+                    "cannot listen for broadcasts on %s:%d (%s); broadcast replies from the IUT will "
+                    "not be seen, use --target or --bbmd", *server.broadcast_address, err,
+                )
+                continue
+            protocol.destination = LocalBroadcast()
+            self._extra_transports.append(transport)
+
+    def broadcast_servers(self) -> List[Any]:
+        # a foreign device gets broadcasts forwarded by its BBMD
+        return [
+            ll.server for ll in self.link_layers.values()
+            if isinstance(ll, NormalLinkLayer) and ll.server.broadcast_address is not None
+        ]
 
     def add_listener(self, fn: Callable[[APDU], None]) -> None:
         self._listeners.append(fn)
@@ -48,7 +94,10 @@ class TesterApplication(Application):
 
 
 def build_application(config: RunConfig) -> TesterApplication:
-    address = config.local_address or ("host:0" if config.bbmd else "host")
+    address = config.local_address or "host"
+    default_port = not re.search(r":\d+$", address)
+    if default_port:
+        address += f":{DEFAULT_LOCAL_PORT}"
     args = argparse.Namespace(
         name="bacpicker-tester",
         instance=config.tester_instance,
@@ -60,6 +109,10 @@ def build_application(config: RunConfig) -> TesterApplication:
         bbmd=None,
     )
     app = TesterApplication.from_args(args)
+    if default_port:
+        app.broadcast_port_redirected = True
+        for server in app.broadcast_servers():
+            server.broadcast_address = (server.broadcast_address[0], BACNET_PORT)
     # the TD accepts the largest BACnet/IP APDU so responses are never limited by the tester
     app.device_object.maxApduLengthAccepted = 1476
     app.device_object.maxSegmentsAccepted = 64
