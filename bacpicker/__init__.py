@@ -7,3 +7,5 @@ __version__ = "0.1.0"
 
 # Clause numbers in test modules refer to this edition of the standard.
 STANDARD_EDITION = "ANSI/ASHRAE 135.1-2023"
+
+from . import bacpypes_compat  # noqa: E402, F401

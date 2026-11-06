@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reference data: ASHRAE CSML object and data type models, Annex K BIBB tables, and
   Protocol_Revision history; `tools/extract_bibbs.py` to regenerate the BIBB tables.
 - Self-test suite running the tool end to end against a simulated BACpypes3 device.
+- Color and Color Temperature object support (types 63 and 64, and the Lighting Output
+  color properties) added at import for BACpypes3 releases that lack it.
 - GitHub Actions workflows for the self-tests, Ruff, Pyright and CodeQL.
 - `CONTRIBUTING.md`.
 
