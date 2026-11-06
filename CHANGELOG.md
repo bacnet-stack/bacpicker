@@ -31,4 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions workflows for the self-tests, Ruff, Pyright and CodeQL.
 - `CONTRIBUTING.md`.
 
+### Changed
+
+- Without a port in `--address`, the tester binds UDP 47823 (0xBACF) and sends
+  broadcasts to 47808 (0xBAC0), so it can run on the same host as the IUT.
+
+### Fixed
+
+- HTML report showed each test step number twice.
+
 [Unreleased]: https://github.com/bacnet-stack/bacpicker/commits/default
