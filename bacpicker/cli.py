@@ -55,7 +55,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     run.add_argument("--epics", type=Path, metavar="FILE",
                      help="EPICS with the BIBBs Supported section filled in (see --generate-epics)")
     run.add_argument("--generate-epics", type=Path, metavar="FILE",
-                     help="read the IUT's objects, write an EPICS with all BIBBs commented out, and exit")
+                     help="read the IUT's objects, write an EPICS with optional BIBBs commented out, "
+                          "and exit")
     run.add_argument("--unconfirmed-response-fail-time", type=float, metavar="SEC",
                      help="135.1 Unconfirmed Response Fail Time (default: EPICS Fail Times, else 3)")
     run.add_argument("--internal-processing-fail-time", type=float, metavar="SEC",

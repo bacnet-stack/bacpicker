@@ -4,8 +4,9 @@
 """EPICS (135.1 clause 4) writer and parser.
 
 The writer turns the test database read from the IUT into an EPICS, with every Annex K
-BIBB listed but commented out. The user uncomments the BIBBs the product claims (and can
-edit Initiate support, Fail Times and restrictions), then passes the file with --epics.
+BIBB listed but commented out except those required of all devices (DS-RP-B). The user
+uncomments the BIBBs the product claims (and can edit Initiate support, Fail Times and
+restrictions), then passes the file with --epics.
 """
 
 from __future__ import annotations
@@ -112,6 +113,9 @@ def format_value(value: Any) -> str:
 # ---- writer --------------------------------------------------------------------
 
 
+REQUIRED_BIBBS = frozenset({"DS-RP-B"})
+
+
 def _suggested_bibbs(profile: Any, database: Any) -> Dict[str, str]:
     """B-side BIBBs whose execute services and object types the IUT appears to support."""
     present = {r.object_type for r in database.objects.values()}
@@ -159,6 +163,9 @@ def write_epics(path: Path, profile: Any, database: Any, config: Any) -> None:
     ]
     suggestions = _suggested_bibbs(profile, database)
     for acronym in sorted(bibbs()):
+        if acronym in REQUIRED_BIBBS:
+            lines.append(f"{acronym:<19}-- required of all BACnet devices")
+            continue
         hint = f"  -- suggested: {suggestions[acronym]}" if acronym in suggestions else ""
         lines.append(f"-- {acronym:<16}{hint}")
     lines += [

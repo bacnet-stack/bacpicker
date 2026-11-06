@@ -34,7 +34,7 @@ async def test_generated_epics_round_trip(loopback_config, tmp_path):
     assert path.read_bytes().startswith(b"PICS 0\r\nBACnet Protocol Implementation Conformance Statement\r\n")
 
     epics = parse_epics(path)
-    assert epics.bibbs == []
+    assert epics.bibbs == ["DS-RP-B"]
     assert epics.general["vendor name"] == "BACpypes"
     assert epics.services["read-property"] == {"execute"}
     assert epics.services["i-am"] == {"initiate"}
@@ -45,14 +45,14 @@ async def test_generated_epics_round_trip(loopback_config, tmp_path):
     assert av1.properties["object-name"].value == '"Zone Temperature"'
     assert not epics.unknown
 
-    uncomment(path, "DS-RP-B", "DM-DDB-B")
+    uncomment(path, "DM-DDB-B")
     assert parse_epics(path).bibbs == ["DM-DDB-B", "DS-RP-B"]
 
 
 async def test_bibb_consistency(loopback_config, tmp_path):
     path = tmp_path / "iut.tpi"
     await generate(loopback_config, path)
-    uncomment(path, "DS-RP-B", "DM-DDB-B", "SCHED-I-B")
+    uncomment(path, "DM-DDB-B", "SCHED-I-B")
     _profile, report = await run_suite(
         loopback_config, include=["5(a)", "5(b)", "5(c)", "5(d)", "5(e)"], epics=parse_epics(path)
     )
