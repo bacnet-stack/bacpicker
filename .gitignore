@@ -1,3 +1,8 @@
+# Project Specific
+.venv/
+reports/
+
+# Python specific files and folders
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

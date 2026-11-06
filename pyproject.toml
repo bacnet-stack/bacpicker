@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bacpicker"
+version = "0.1.0"
+description = "BACnet/IP conformance test tool based on ANSI/ASHRAE 135.1, built on BACpypes3"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+dependencies = ["bacpypes3>=0.0.100"]
+
+[project.urls]
+Homepage = "https://github.com/bacnet-stack/bacpicker"
+Issues = "https://github.com/bacnet-stack/bacpicker/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-asyncio>=0.23", "pyright", "ruff"]
+
+[project.scripts]
+bacpicker = "bacpicker.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bacpicker*"]
+
+[tool.setuptools.package-data]
+bacpicker = ["data/*.xml", "data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["selftests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py39"
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "SIM"]
+
+[tool.pyright]
+include = ["bacpicker", "selftests", "tools"]
+pythonVersion = "3.9"
+typeCheckingMode = "standard"
+# bacpypes3 has no type information and builds its PDU classes with metaclasses
+useLibraryCodeForTypes = false

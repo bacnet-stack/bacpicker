@@ -1,0 +1,341 @@
+# Copyright 2026 Steve Karg <skarg@users.sourceforge.net>
+# SPDX-License-Identifier: Apache-2.0
+
+"""Building blocks shared by the 135.1 test modules (135.1 test language: READ, VERIFY, ...)."""
+
+from __future__ import annotations
+
+from typing import Any, List, NamedTuple, Optional, Sequence, Tuple, Union
+
+from bacpypes3.apdu import (
+    ErrorRejectAbortNack,
+    ReadPropertyACK,
+    ReadPropertyMultipleACK,
+    ReadPropertyMultipleRequest,
+    ReadPropertyRequest,
+)
+from bacpypes3.basetypes import PropertyIdentifier, PropertyReference, ReadAccessSpecification
+from bacpypes3.constructeddata import Array, SequenceOf
+from bacpypes3.primitivedata import ObjectIdentifier, ObjectType, Unsigned
+
+from ..assertions import format_pdu
+from ..context import BASE_TYPES, TestContext, application_tag, base_type, value_tags
+
+MAX_INSTANCE = 4194303
+COMMON_PROPERTIES = ("object-identifier", "object-name", "object-type")
+
+PropSpec = Union[str, Tuple[str, int]]
+AccessSpecs = Sequence[Tuple[ObjectIdentifier, Sequence[PropSpec]]]
+
+
+# ---- requests --------------------------------------------------------------
+
+
+def rp_request(
+    ctx: TestContext, objid: ObjectIdentifier, prop: str, index: Optional[int] = None
+) -> ReadPropertyRequest:
+    request = ReadPropertyRequest(
+        objectIdentifier=objid,
+        propertyIdentifier=PropertyIdentifier(prop),
+        destination=ctx.iut.address,
+    )
+    if index is not None:
+        request.propertyArrayIndex = index
+    return request
+
+
+def rpm_request(ctx: TestContext, specs: AccessSpecs) -> ReadPropertyMultipleRequest:
+    access_specs = []
+    for objid, props in specs:
+        refs = []
+        for prop in props:
+            name, index = (prop, None) if isinstance(prop, str) else prop
+            ref = PropertyReference(propertyIdentifier=PropertyIdentifier(name))
+            if index is not None:
+                ref.propertyArrayIndex = index
+            refs.append(ref)
+        access_specs.append(
+            ReadAccessSpecification(objectIdentifier=objid, listOfPropertyReferences=refs)
+        )
+    return ReadPropertyMultipleRequest(
+        listOfReadAccessSpecs=SequenceOf(ReadAccessSpecification)(access_specs),
+        destination=ctx.iut.address,
+    )
+
+
+class Element(NamedTuple):
+    """One property result from a ReadProperty-ACK or ReadPropertyMultiple-ACK."""
+
+    objid: ObjectIdentifier
+    prop: str
+    array_index: Optional[int]
+    value: Any
+    error: Any
+
+    @property
+    def prop_number(self) -> int:
+        return prop_number(self.prop)
+
+    def label(self) -> str:
+        suffix = f"[{self.array_index}]" if self.array_index is not None else ""
+        return f"{self.objid} {self.prop}{suffix}"
+
+
+def prop_number(name: str) -> int:
+    return int(name) if name.isdigit() else int(PropertyIdentifier(name))
+
+
+def is_standard_property(name: str) -> bool:
+    return prop_number(name) < 512
+
+
+def rpm_elements(ack: ReadPropertyMultipleACK) -> List[Element]:
+    return [
+        Element(
+            objid=result.objectIdentifier,
+            prop=str(element.propertyIdentifier),
+            array_index=element.propertyArrayIndex,
+            value=element.readResult.propertyValue,
+            error=element.readResult.propertyAccessError,
+        )
+        for result in ack.listOfReadAccessResults
+        for element in result.listOfResults
+    ]
+
+
+async def read_one(
+    ctx: TestContext,
+    objid: ObjectIdentifier,
+    prop: str,
+    index: Optional[int] = None,
+    *,
+    service: str = "rp",
+) -> Optional[Element]:
+    """Read one property with ReadProperty ("rp") or ReadPropertyMultiple ("rpm").
+
+    Error/Reject/Abort PDUs are raised; an RPM embedded error is returned in Element.error.
+    Returns None (after recording a defect) if the ACK is malformed.
+    """
+    if service == "rp":
+        request = rp_request(ctx, objid, prop, index)
+        ack = await ctx.send(request)
+        if not ctx.check(
+            isinstance(ack, ReadPropertyACK),
+            "Unexpected acknowledgement type",
+            expected="ReadProperty-ACK",
+            actual=type(ack).__name__,
+            request=request,
+        ):
+            return None
+        return Element(
+            ack.objectIdentifier, str(ack.propertyIdentifier), ack.propertyArrayIndex,
+            ack.propertyValue, None,
+        )
+
+    request = rpm_request(ctx, [(objid, [prop if index is None else (prop, index)])])
+    ack = await ctx.send(request)
+    elements = rpm_elements(ack) if isinstance(ack, ReadPropertyMultipleACK) else []
+    if not ctx.check(
+        len(elements) == 1,
+        "ReadPropertyMultiple-ACK does not contain exactly one result",
+        expected="ReadPropertyMultiple-ACK with one result",
+        actual=format_pdu(ack),
+        request=request,
+    ):
+        return None
+    return elements[0]
+
+
+def check_echo(
+    ctx: TestContext,
+    element: Element,
+    objid: ObjectIdentifier,
+    prop: str,
+    index: Optional[int] = None,
+) -> bool:
+    expected = Element(objid, prop, index, None, None).label()
+    return ctx.check(
+        (element.objid, element.prop, element.array_index) == (objid, prop, index),
+        "ACK does not identify the requested object/property/array index",
+        expected=expected,
+        actual=element.label(),
+    )
+
+
+def check_value(ctx: TestContext, element: Element, message: str = "") -> bool:
+    """CHECK (V is any valid value of the correct data type for the property)."""
+    if element.error is not None:
+        return ctx.check(
+            False,
+            message or f"Expected a value for {element.label()}",
+            expected="property value",
+            actual=f"error-class={element.error.errorClass}, error-code={element.error.errorCode}",
+        )
+    ptype = ctx.property_type(element.objid, element.prop)
+    if element.array_index is not None and isinstance(ptype, type) and issubclass(ptype, Array):
+        ptype = Unsigned if element.array_index == 0 else ptype._subtype
+    base = base_type(ptype)
+    if base is not None:
+        expected_tag = dict(BASE_TYPES)[base]
+        actual_tag = application_tag(element.value)
+        if not ctx.check(
+            actual_tag == expected_tag,
+            message or f"Value of {element.label()} has the wrong data type",
+            expected=f"{base.__name__} (application tag {expected_tag})",
+            actual=f"application tag {actual_tag}" if actual_tag is not None else "not a primitive value",
+        ):
+            return False
+    try:
+        ctx.decode(element.objid, element.prop, element.array_index, element.value)
+    except Exception as err:
+        return ctx.check(
+            False,
+            message or f"Value of {element.label()} cannot be decoded",
+            expected=getattr(ptype, "__name__", "valid value"),
+            actual=f"{type(err).__name__}: {err}",
+        )
+    return True
+
+
+def tag_signature(value: Any) -> List[Tuple[int, int, bytes]]:
+    tags = value_tags(value)
+    return [(int(t.tag_class), int(t.tag_number), bytes(t.tag_data or b"")) for t in tags]
+
+
+async def verify(
+    ctx: TestContext,
+    objid: ObjectIdentifier,
+    prop: str,
+    expected: Any,
+    index: Optional[int] = None,
+    *,
+    service: str = "rp",
+    source: str = "",
+) -> Optional[Element]:
+    """VERIFY (objid), prop = expected. source names where the expected value came from."""
+    element = await read_one(ctx, objid, prop, index, service=service)
+    if element is None:
+        return None
+    check_echo(ctx, element, objid, prop, index)
+    if not check_value(ctx, element):
+        return element
+    value = ctx.decode(objid, prop, index, element.value)
+    if isinstance(expected, list):
+        value = list(value)
+    ctx.check(
+        value == expected,
+        f"{element.label()} does not have the expected value" + (f" ({source})" if source else ""),
+        expected=expected,
+        actual=value,
+    )
+    return element
+
+
+def iut_instance_ranges(ctx: TestContext) -> dict:
+    """Device instance ranges relative to the IUT instance X used by 9.32 / 9.33."""
+    x = ctx.iut.device_instance
+    return {
+        "inside": (x - 1, x + 1) if 0 < x < MAX_INSTANCE else None,
+        "low_equal": (x, x + 1) if x < MAX_INSTANCE else None,
+        "high_equal": (x - 1, x) if x > 0 else None,
+    }
+
+
+# ---- shared procedures -------------------------------------------------------
+
+
+async def reading_properties_based_on_data_type(ctx: TestContext, service: str) -> None:
+    """9.18.1.5 / 9.20.1.13: read one property of each supported base data type."""
+    covered = {}
+    all_bases = [b for b, _ in BASE_TYPES]
+    for objid in ctx.test_objects():
+        property_list = await ctx.property_list(objid)
+        props = list(COMMON_PROPERTIES) + (
+            property_list if property_list is not None else sorted(ctx.model_properties(objid))
+        )
+        for prop in props:
+            if not is_standard_property(prop):
+                continue
+            base = base_type(ctx.property_type(objid, prop))
+            if base is None or base in covered:
+                continue
+            ctx.step(f"1. READ V = ({objid}), {prop}  [{base.__name__}]")
+            try:
+                element = await read_one(ctx, objid, prop, service=service)
+            except ErrorRejectAbortNack as err:
+                if property_list is not None and prop in property_list:
+                    ctx.defect(
+                        f"Property {prop} listed in Property_List could not be read",
+                        expected="property value",
+                        actual=format_pdu(err),
+                    )
+                continue
+            if element is None:
+                continue
+            if element.error is not None and (property_list is None or prop not in property_list):
+                continue
+            ctx.step(f"2. CHECK (V is a valid {base.__name__} value)")
+            check_echo(ctx, element, objid, prop)
+            check_value(ctx, element)
+            covered[base] = f"{objid} {prop}"
+        if len(covered) == len(all_bases):
+            break
+    for base, where in covered.items():
+        ctx.note(f"{base.__name__}: {where}")
+    missing = [b.__name__ for b in all_bases if b not in covered]
+    if missing:
+        ctx.note("no property found for data type(s): " + ", ".join(missing))
+    if not covered:
+        ctx.skip("no readable property of a known base data type was found")
+
+
+async def network_port_unknown_instance(ctx: TestContext, service: str) -> None:
+    """9.18.1.8 / 9.20.1.14: read the Network Port object using instance 4194303."""
+    ports = [o for o in ctx.iut.object_list if str(o[0]) == "network-port"]
+    if not ports:
+        ctx.skip("IUT has no Network Port object")
+    wildcard = ObjectIdentifier((ObjectType("network-port"), MAX_INSTANCE))
+
+    ctx.step(f"1. TRANSMIT {service.upper()} ({wildcard}), Object_Identifier")
+    element = await read_one(ctx, wildcard, "object-identifier", service=service)
+    if element is None:
+        return
+    ctx.step("2. RECEIVE ACK 'Object Identifier' = (Network Port, X), value = (Network Port, X)")
+    if not check_value(ctx, element):
+        return
+    port = element.objid
+    ctx.require(
+        port in ports,
+        "ACK does not identify one of the IUT's Network Port objects",
+        expected=f"one of {[str(p) for p in ports]}",
+        actual=port,
+    )
+    ctx.check_equal(
+        ctx.decode(port, "object-identifier", None, element.value),
+        port,
+        "Object_Identifier value differs from the object identified in the ACK",
+    )
+
+    props = await ctx.property_list(port)
+    if props is None:
+        ctx.note("Property_List unreadable; using the tester's object model")
+        props = sorted(ctx.model_properties(port))
+    for prop in list(COMMON_PROPERTIES) + [p for p in props if p not in COMMON_PROPERTIES]:
+        ctx.step(f"3. REPEAT P = {prop}: read via ({wildcard}) and VERIFY ({port}), {prop} = V")
+        try:
+            via_wildcard = await read_one(ctx, wildcard, prop, service=service)
+        except ErrorRejectAbortNack as err:
+            ctx.defect(f"Reading {prop} via instance 4194303 failed", actual=format_pdu(err))
+            continue
+        if via_wildcard is None or via_wildcard.error is not None:
+            continue
+        ctx.check_equal(via_wildcard.objid, port, "ACK 'Object Identifier' is not (Network Port, X)")
+        direct = await read_one(ctx, port, prop, service=service)
+        if direct is None or direct.error is not None:
+            continue
+        ctx.check(
+            tag_signature(direct.value) == tag_signature(via_wildcard.value),
+            f"{prop} read via instance 4194303 differs from the value read from {port}",
+            expected=ctx.decode(port, prop, None, direct.value),
+            actual=ctx.decode(port, prop, None, via_wildcard.value),
+        )

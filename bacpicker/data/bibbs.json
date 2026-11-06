@@ -1,0 +1,2165 @@
+{
+ "AA-AS-B": {
+  "clause": "K.9.5",
+  "services": {},
+  "title": "Authorization Server - B"
+ },
+ "AA-AT-B": {
+  "clause": "K.9.3",
+  "services": {},
+  "title": "Authorization Target - B"
+ },
+ "AA-DAC-A": {
+  "clause": "K.9.1",
+  "services": {},
+  "title": "Dynamic Authorization Client - A"
+ },
+ "AA-NAT-B": {
+  "clause": "K.9.4",
+  "services": {},
+  "title": "Non-secure Authorization Target - B"
+ },
+ "AA-SAC-A": {
+  "clause": "K.9.2",
+  "services": {},
+  "title": "Static Authorization Client - A"
+ },
+ "AE-AC-A": {
+  "clause": "K.2.31",
+  "services": {
+   "acknowledge-alarm": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Access Control-A"
+ },
+ "AE-AC-B": {
+  "clause": "K.2.32",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Access Control-B"
+ },
+ "AE-ACAVM-A": {
+  "clause": "K.2.35",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Access Control Advanced View and Modify-A"
+ },
+ "AE-ACAVN-A": {
+  "clause": "K.2.33",
+  "services": {},
+  "title": "Alarm and Event Management-Access Control Advanced View Notifications-A"
+ },
+ "AE-ACK-A": {
+  "clause": "K.2.4",
+  "services": {
+   "acknowledge-alarm": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Acknowledge-A"
+ },
+ "AE-ACK-B": {
+  "clause": "K.2.5",
+  "services": {
+   "acknowledge-alarm": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Acknowledge-B"
+ },
+ "AE-ACVM-A": {
+  "clause": "K.2.34",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Access Control View and Modify-A"
+ },
+ "AE-AS-A": {
+  "clause": "K.2.18",
+  "services": {
+   "get-alarm-summary": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "get-event-information": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Alarm Summary View-A"
+ },
+ "AE-ASUM-A": {
+  "clause": "K.2.6",
+  "services": {
+   "get-alarm-summary": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Alarm Summary-A"
+ },
+ "AE-ASUM-B": {
+  "clause": "K.2.7",
+  "services": {
+   "get-alarm-summary": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Alarm Summary-B"
+ },
+ "AE-AVM-A": {
+  "clause": "K.2.17",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Advanced View and Modify-A"
+ },
+ "AE-AVN-A": {
+  "clause": "K.2.15",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Advanced View Notifications-A"
+ },
+ "AE-CRL-B": {
+  "clause": "K.2.25",
+  "services": {
+   "i-am": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "who-is": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Configurable Recipient Lists-B"
+ },
+ "AE-EAVM-A": {
+  "clause": "K.2.39",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Elevator Advanced View and Modify-A"
+ },
+ "AE-EAVN-A": {
+  "clause": "K.2.37",
+  "services": {},
+  "title": "Alarm and Event Management-Elevator Advanced View Notifications-A"
+ },
+ "AE-EL-E-B": {
+  "clause": "K.2.22",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Event Log-External-B"
+ },
+ "AE-EL-I-B": {
+  "clause": "K.2.21",
+  "services": {
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Event Log-Internal-B"
+ },
+ "AE-ELV-A": {
+  "clause": "K.2.19",
+  "services": {
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Event Log View-A"
+ },
+ "AE-ELVM-A": {
+  "clause": "K.2.20",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Event Log View and Modify-A"
+ },
+ "AE-ESUM-A": {
+  "clause": "K.2.8",
+  "services": {
+   "get-enrollment-summary": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Enrollment Summary-A"
+ },
+ "AE-ESUM-B": {
+  "clause": "K.2.9",
+  "services": {
+   "get-enrollment-summary": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Enrollment Summary-B"
+ },
+ "AE-EVM-A": {
+  "clause": "K.2.38",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Elevator View and Modify-A"
+ },
+ "AE-EVN-A": {
+  "clause": "K.2.36",
+  "services": {},
+  "title": "Alarm and Event Management-Elevator View Notifications-A"
+ },
+ "AE-INFO-A": {
+  "clause": "K.2.10",
+  "services": {
+   "get-event-information": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Information-A"
+ },
+ "AE-INFO-B": {
+  "clause": "K.2.11",
+  "services": {
+   "get-event-information": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Information-B"
+ },
+ "AE-LS-A": {
+  "clause": "K.2.12",
+  "services": {
+   "acknowledge-alarm": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "life-safety-operation": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-LifeSafety-A"
+ },
+ "AE-LS-B": {
+  "clause": "K.2.13",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "life-safety-operation": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-LifeSafety-B"
+ },
+ "AE-LSAVM-A": {
+  "clause": "K.2.30",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Life Safety Advanced View and Modify-A"
+ },
+ "AE-LSAVN-A": {
+  "clause": "K.2.28",
+  "services": {},
+  "title": "Alarm and Event Management-Life Safety Advanced View Notifications-A"
+ },
+ "AE-LSVM-A": {
+  "clause": "K.2.29",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Life Safety View and Modify-A"
+ },
+ "AE-LSVN-A": {
+  "clause": "K.2.27",
+  "services": {},
+  "title": "Alarm and Event Management-Life Safety View Notifications-A"
+ },
+ "AE-N-A": {
+  "clause": "K.2.1",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Notification-A"
+ },
+ "AE-N-E-B": {
+  "clause": "K.2.3",
+  "services": {},
+  "title": "Alarm and Event Management-Notification-External-B"
+ },
+ "AE-N-I-B": {
+  "clause": "K.2.2",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "",
+    "initiate": "conditional"
+   },
+   "unconfirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Notification-Internal-B"
+ },
+ "AE-NF-B": {
+  "clause": "K.2.23",
+  "services": {
+   "add-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "remove-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Notification Forwarder-B"
+ },
+ "AE-NF-I-B": {
+  "clause": "K.2.24",
+  "services": {
+   "add-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "confirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "remove-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-Notification Forwarder-Internal-B"
+ },
+ "AE-TES-A": {
+  "clause": "K.2.26",
+  "services": {
+   "add-list-element": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "remove-list-element": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-Temporary Event Subscription-A"
+ },
+ "AE-VM-A": {
+  "clause": "K.2.16",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Alarm and Event Management-View and Modify-A"
+ },
+ "AE-VN-A": {
+  "clause": "K.2.14",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Alarm and Event Management-View Notifications-A"
+ },
+ "AR-AVM-A": {
+  "clause": "K.8.6",
+  "services": {
+   "audit-log-query": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Audit Reporting-Advanced View and Modify-A"
+ },
+ "AR-F-B": {
+  "clause": "K.8.4",
+  "services": {
+   "confirmed-audit-notification": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-audit-notification": {
+    "execute": "x",
+    "initiate": "x"
+   }
+  },
+  "title": "Audit Reporting-Forwarder-B"
+ },
+ "AR-L-A": {
+  "clause": "K.8.1",
+  "services": {
+   "audit-log-query": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "confirmed-audit-notification": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-audit-notification": {
+    "execute": "x",
+    "initiate": "x"
+   }
+  },
+  "title": "Audit Reporting-Logging- A"
+ },
+ "AR-R-B": {
+  "clause": "K.8.2",
+  "services": {
+   "confirmed-audit-notification": {
+    "execute": "",
+    "initiate": "conditional"
+   },
+   "unconfirmed-audit-notification": {
+    "execute": "",
+    "initiate": "conditional"
+   }
+  },
+  "title": "Audit Reporting-Reporter-B"
+ },
+ "AR-R-S-B": {
+  "clause": "K.8.3",
+  "services": {
+   "confirmed-audit-notification": {
+    "execute": "",
+    "initiate": "conditional"
+   },
+   "unconfirmed-audit-notification": {
+    "execute": "",
+    "initiate": "conditional"
+   }
+  },
+  "title": "Audit Reporting-Reporter-Simple-B"
+ },
+ "AR-V-A": {
+  "clause": "K.8.5",
+  "services": {
+   "audit-log-query": {
+    "execute": "",
+    "initiate": "conditional"
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "conditional"
+   }
+  },
+  "title": "Audit Reporting-View-A"
+ },
+ "DM-ADM-A": {
+  "clause": "K.5.28",
+  "services": {},
+  "title": "Device Management-Automatic Device Mapping-A"
+ },
+ "DM-ANM-A": {
+  "clause": "K.5.27",
+  "services": {},
+  "title": "Device Management-Automatic Network Mapping-A"
+ },
+ "DM-ATS-A": {
+  "clause": "K.5.29",
+  "services": {
+   "time-synchronization": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "utc-time-synchronization": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Automatic Time Synchronization-A"
+ },
+ "DM-BR-A": {
+  "clause": "K.5.17",
+  "services": {
+   "atomic-read-file": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "atomic-write-file": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "reinitialize-device": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Backup and Restore-A"
+ },
+ "DM-BR-B": {
+  "clause": "K.5.18",
+  "services": {
+   "atomic-read-file": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "atomic-write-file": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "reinitialize-device": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Backup and Restore-B"
+ },
+ "DM-DAP-B": {
+  "clause": "K.5.37",
+  "services": {
+   "add-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "i-am": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "remove-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "who-is": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Device Address Proxying-B"
+ },
+ "DM-DAP-VM-A": {
+  "clause": "K.5.36",
+  "services": {
+   "add-list-element": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "remove-list-element": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Device Address Proxying-View and Modify-A"
+ },
+ "DM-DCC-A": {
+  "clause": "K.5.5",
+  "services": {
+   "device-communication-control": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-DeviceCommunicationControl-A"
+ },
+ "DM-DCC-B": {
+  "clause": "K.5.6",
+  "services": {
+   "device-communication-control": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-DeviceCommunicationControl-B"
+ },
+ "DM-DDA-A": {
+  "clause": "K.5.34",
+  "services": {
+   "who-am-i": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "who-is": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "you-are": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Dynamic Device Assignment-A"
+ },
+ "DM-DDA-B": {
+  "clause": "K.5.35",
+  "services": {
+   "i-am": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "who-am-i": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "who-is": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "you-are": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Dynamic Device Assignment-B"
+ },
+ "DM-DDB-A": {
+  "clause": "K.5.1",
+  "services": {
+   "i-am": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "who-is": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Dynamic Device Binding-A"
+ },
+ "DM-DDB-B": {
+  "clause": "K.5.2",
+  "services": {
+   "i-am": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "who-is": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Dynamic Device Binding-B"
+ },
+ "DM-DOB-A": {
+  "clause": "K.5.3",
+  "services": {
+   "i-have": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "who-has": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Dynamic Object Binding-A"
+ },
+ "DM-DOB-B": {
+  "clause": "K.5.4",
+  "services": {
+   "i-have": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "who-has": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Dynamic Object Binding-B"
+ },
+ "DM-LM-A": {
+  "clause": "K.5.21",
+  "services": {
+   "add-list-element": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "remove-list-element": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-List Manipulation-A"
+ },
+ "DM-LM-B": {
+  "clause": "K.5.22",
+  "services": {
+   "add-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "remove-list-element": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-List Manipulation-B"
+ },
+ "DM-LOM-A": {
+  "clause": "K.5.33",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management- Lighting Output Management-A"
+ },
+ "DM-MTS-A": {
+  "clause": "K.5.30",
+  "services": {
+   "time-synchronization": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "utc-time-synchronization": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Manual Time Synchronization-A"
+ },
+ "DM-OCD-A": {
+  "clause": "K.5.23",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Object Creation and Deletion-A"
+ },
+ "DM-OCD-B": {
+  "clause": "K.5.24",
+  "services": {
+   "create-object": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "delete-object": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Object Creation and Deletion-B"
+ },
+ "DM-R-A": {
+  "clause": "K.5.19",
+  "services": {
+   "unconfirmed-cov-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Restart-A"
+ },
+ "DM-R-B": {
+  "clause": "K.5.20",
+  "services": {
+   "unconfirmed-cov-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Restart-B"
+ },
+ "DM-RD-A": {
+  "clause": "K.5.15",
+  "services": {
+   "reinitialize-device": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-ReinitializeDevice-A"
+ },
+ "DM-RD-B": {
+  "clause": "K.5.16",
+  "services": {
+   "reinitialize-device": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-ReinitializeDevice-B"
+ },
+ "DM-SP-B": {
+  "clause": "K.5.32",
+  "services": {
+   "add-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "i-am": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "remove-list-element": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "who-is": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Subordinate Proxy-B"
+ },
+ "DM-SP-VM-A": {
+  "clause": "K.5.31",
+  "services": {
+   "add-list-element": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "remove-list-element": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Subordindate Proxy-View and Modify-A"
+ },
+ "DM-TM-A": {
+  "clause": "K.5.9",
+  "services": {
+   "confirmed-text-message": {
+    "execute": "",
+    "initiate": "conditional"
+   },
+   "unconfirmed-text-message": {
+    "execute": "",
+    "initiate": "conditional"
+   }
+  },
+  "title": "Device Management-Text Message-A"
+ },
+ "DM-TM-B": {
+  "clause": "K.5.10",
+  "services": {
+   "confirmed-text-message": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-text-message": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Text Message-B"
+ },
+ "DM-TS-A": {
+  "clause": "K.5.11",
+  "services": {
+   "time-synchronization": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-TimeSynchronization-A"
+ },
+ "DM-TS-B": {
+  "clause": "K.5.12",
+  "services": {
+   "time-synchronization": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-TimeSynchronization-B"
+ },
+ "DM-TSDE-A": {
+  "clause": "K.5.39",
+  "services": {},
+  "title": "Device Management-Times Series Data Export-A"
+ },
+ "DM-TSDI-A": {
+  "clause": "K.5.38",
+  "services": {},
+  "title": "Device Management-Times Series Data Import-A"
+ },
+ "DM-UTC-A": {
+  "clause": "K.5.13",
+  "services": {
+   "utc-time-synchronization": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-UTCTimeSynchronization-A"
+ },
+ "DM-UTC-B": {
+  "clause": "K.5.14",
+  "services": {
+   "utc-time-synchronization": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-UTCTimeSynchronization-B"
+ },
+ "DM-VT-A": {
+  "clause": "K.5.25",
+  "services": {
+   "vt-close": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "vt-data": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "vt-open": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Device Management-Virtual Terminal-A"
+ },
+ "DM-VT-B": {
+  "clause": "K.5.26",
+  "services": {
+   "vt-close": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "vt-data": {
+    "execute": "x",
+    "initiate": "x"
+   },
+   "vt-open": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Device Management-Virtual Terminal-B"
+ },
+ "DS-ACAD-A": {
+  "clause": "K.1.37",
+  "services": {},
+  "title": "Data Sharing-Access Control Access Door-A"
+ },
+ "DS-ACAD-B": {
+  "clause": "K.1.38",
+  "services": {},
+  "title": "Data Sharing-Access Control Access Door-B"
+ },
+ "DS-ACAM-A": {
+  "clause": "K.1.32",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Access Control Advanced Modify-A"
+ },
+ "DS-ACAV-A": {
+  "clause": "K.1.30",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Access Control Advanced View-A"
+ },
+ "DS-ACCDI-A": {
+  "clause": "K.1.39",
+  "services": {},
+  "title": "Data Sharing-Access Control Credential Data Input-A"
+ },
+ "DS-ACCDI-B": {
+  "clause": "K.1.40",
+  "services": {},
+  "title": "Data Sharing-Access Control Credential Data Input-B"
+ },
+ "DS-ACM-A": {
+  "clause": "K.1.31",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Access Control Modify-A"
+ },
+ "DS-ACSC-A": {
+  "clause": "K.1.35",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Access Control Site Configuration-A"
+ },
+ "DS-ACSC-B": {
+  "clause": "K.1.36",
+  "services": {
+   "read-property": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Access Control Site Configuration-B"
+ },
+ "DS-ACUC-A": {
+  "clause": "K.1.33",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Access Control User Configuration-A"
+ },
+ "DS-ACUC-B": {
+  "clause": "K.1.34",
+  "services": {
+   "read-property": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Access Control User Configuration-B"
+ },
+ "DS-ACV-A": {
+  "clause": "K.1.29",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Access Control View-A"
+ },
+ "DS-ALO-A": {
+  "clause": "K.1.43",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Advanced Lighting Output-A"
+ },
+ "DS-AM-A": {
+  "clause": "K.1.18",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Advanced Modify-A"
+ },
+ "DS-AV-A": {
+  "clause": "K.1.16",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Advanced View-A"
+ },
+ "DS-BLO-B": {
+  "clause": "K.1.45",
+  "services": {
+   "read-property": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Binary Lighting Output-B"
+ },
+ "DS-COV-A": {
+  "clause": "K.1.9",
+  "services": {
+   "confirmed-cov-notification": {
+    "execute": "conditional",
+    "initiate": ""
+   },
+   "subscribe-cov": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-cov-notification": {
+    "execute": "conditional",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Change Of Value-A"
+ },
+ "DS-COV-B": {
+  "clause": "K.1.10",
+  "services": {
+   "confirmed-cov-notification": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "subscribe-cov": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-cov-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Change Of Value-B"
+ },
+ "DS-COVM-A": {
+  "clause": "K.1.23",
+  "services": {
+   "confirmed-cov-notification-multiple": {
+    "execute": "conditional",
+    "initiate": ""
+   },
+   "subscribe-cov-property-multiple": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-cov-notification-multiple": {
+    "execute": "conditional",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Change Of Value Multiple-A"
+ },
+ "DS-COVM-B": {
+  "clause": "K.1.24",
+  "services": {
+   "confirmed-cov-notification-multiple": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "subscribe-cov-property-multiple": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-cov-notification-multiple": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Change Of Value Multiple-B"
+ },
+ "DS-COVP-A": {
+  "clause": "K.1.11",
+  "services": {
+   "confirmed-cov-notification": {
+    "execute": "conditional",
+    "initiate": ""
+   },
+   "subscribe-cov-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-cov-notification": {
+    "execute": "conditional",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Change Of Value Property-A"
+ },
+ "DS-COVP-B": {
+  "clause": "K.1.12",
+  "services": {
+   "confirmed-cov-notification": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "subscribe-cov-property": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-cov-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Change Of Value Property-B"
+ },
+ "DS-COVU-A": {
+  "clause": "K.1.13",
+  "services": {
+   "unconfirmed-cov-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Change Of Value Unsubscribed-A"
+ },
+ "DS-COVU-B": {
+  "clause": "K.1.14",
+  "services": {
+   "unconfirmed-cov-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Change Of Value Unsubscribed-B"
+ },
+ "DS-EAM-A": {
+  "clause": "K.1.53",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Elevator Advanced Modify-A"
+ },
+ "DS-EAV-A": {
+  "clause": "K.1.51",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Elevator Advanced View-A"
+ },
+ "DS-EM-A": {
+  "clause": "K.1.52",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Elevator Modify-A"
+ },
+ "DS-EV-A": {
+  "clause": "K.1.50",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Elevator View-A"
+ },
+ "DS-LAM-A": {
+  "clause": "K.1.49",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Lighting Advanced Modify-A"
+ },
+ "DS-LAV-A": {
+  "clause": "K.1.47",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Lighting Advanced View-A"
+ },
+ "DS-LM-A": {
+  "clause": "K.1.48",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Lighting Modify-A"
+ },
+ "DS-LO-A": {
+  "clause": "K.1.41",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Lighting Output-A"
+ },
+ "DS-LO-B": {
+  "clause": "K.1.44",
+  "services": {
+   "read-property": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-Lighting Output-B"
+ },
+ "DS-LOS-A": {
+  "clause": "K.1.42",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Lighting Output Status-A"
+ },
+ "DS-LSAM-A": {
+  "clause": "K.1.28",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Life Safety Advanced Modify-A"
+ },
+ "DS-LSAV-A": {
+  "clause": "K.1.26",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Life Safety Advanced View-A"
+ },
+ "DS-LSM-A": {
+  "clause": "K.1.27",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Life Safety Modify-A"
+ },
+ "DS-LSV-A": {
+  "clause": "K.1.25",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Life Safety View-A"
+ },
+ "DS-LV-A": {
+  "clause": "K.1.46",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Lighting View-A"
+ },
+ "DS-M-A": {
+  "clause": "K.1.17",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-Modify-A"
+ },
+ "DS-RP-A": {
+  "clause": "K.1.1",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-ReadProperty-A"
+ },
+ "DS-RP-B": {
+  "clause": "K.1.2",
+  "services": {
+   "read-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-ReadProperty-B"
+ },
+ "DS-RPM-A": {
+  "clause": "K.1.3",
+  "services": {
+   "read-property-multiple": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-ReadPropertyMultiple-A"
+ },
+ "DS-RPM-B": {
+  "clause": "K.1.4",
+  "services": {
+   "read-property-multiple": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-ReadPropertyMultiple-B"
+ },
+ "DS-V-A": {
+  "clause": "K.1.15",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-View-A"
+ },
+ "DS-VSI-B": {
+  "clause": "K.1.22",
+  "services": {},
+  "title": "Data Sharing-Value Source Information-B"
+ },
+ "DS-WG-A": {
+  "clause": "K.1.19",
+  "services": {
+   "write-group": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-WriteGroup-A"
+ },
+ "DS-WG-E-B": {
+  "clause": "K.1.21",
+  "services": {
+   "write-group": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-WriteGroup-External-B"
+ },
+ "DS-WG-I-B": {
+  "clause": "K.1.20",
+  "services": {
+   "write-group": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-WriteGroup-Internal-B"
+ },
+ "DS-WP-A": {
+  "clause": "K.1.5",
+  "services": {
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-WriteProperty-A"
+ },
+ "DS-WP-B": {
+  "clause": "K.1.6",
+  "services": {
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-WriteProperty-B"
+ },
+ "DS-WPM-A": {
+  "clause": "K.1.7",
+  "services": {
+   "write-property-multiple": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Data Sharing-WritePropertyMultiple-A"
+ },
+ "DS-WPM-B": {
+  "clause": "K.1.8",
+  "services": {
+   "write-property-multiple": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Data Sharing-WritePropertyMultiple-B"
+ },
+ "GW-EO-B": {
+  "clause": "K.7.2",
+  "services": {},
+  "title": "Gateway-Embedded Objects-B"
+ },
+ "GW-VN-B": {
+  "clause": "K.7.1",
+  "services": {},
+  "title": "Gateway-Virtual Network-B"
+ },
+ "NM-BBMDC-A": {
+  "clause": "K.6.5",
+  "services": {},
+  "title": "Network Management-BBMD Configuration-A"
+ },
+ "NM-BBMDC-B": {
+  "clause": "K.6.6",
+  "services": {},
+  "title": "Network Management-BBMD Configuration-B"
+ },
+ "NM-CE-A": {
+  "clause": "K.6.1",
+  "services": {},
+  "title": "Network Management-Connection Establishment-A"
+ },
+ "NM-CE-B": {
+  "clause": "K.6.2",
+  "services": {},
+  "title": "Network Management-Connection Establishment-B"
+ },
+ "NM-FDR-A": {
+  "clause": "K.6.7",
+  "services": {},
+  "title": "Network Management-Foreign Device Registration-A"
+ },
+ "NM-RC-A": {
+  "clause": "K.6.3",
+  "services": {},
+  "title": "Network Management-Router Configuration-A"
+ },
+ "NM-RC-B": {
+  "clause": "K.6.4",
+  "services": {
+   "read-property": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Network Management-Router Configuration-B"
+ },
+ "NM-SCDC-A": {
+  "clause": "K.6.9",
+  "services": {},
+  "title": "Network Management-Secure Connect Direct Connect -A"
+ },
+ "NM-SCDC-B": {
+  "clause": "K.6.10",
+  "services": {
+   "atomic-read-file": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "atomic-write-file": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "reinitialize-device": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Network Management-Secure Connect Direct Connect - B"
+ },
+ "NM-SCH-B": {
+  "clause": "K.6.8",
+  "services": {},
+  "title": "Network Management-Secure Connect Hub-B"
+ },
+ "SCHED-A": {
+  "clause": "K.3.1",
+  "services": {},
+  "title": "Scheduling-A"
+ },
+ "SCHED-AVM-A": {
+  "clause": "K.3.5",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Scheduling-Advanced View and Modify-A"
+ },
+ "SCHED-E-B": {
+  "clause": "K.3.3",
+  "services": {},
+  "title": "Scheduling-External-B"
+ },
+ "SCHED-I-B": {
+  "clause": "K.3.2",
+  "services": {},
+  "title": "Scheduling-Internal-B"
+ },
+ "SCHED-R-B": {
+  "clause": "K.3.4",
+  "services": {},
+  "title": "Scheduling-Readonly-B"
+ },
+ "SCHED-TMR-E-B": {
+  "clause": "K.3.10",
+  "services": {},
+  "title": "Scheduling-Timer-External-B"
+ },
+ "SCHED-TMR-I-B": {
+  "clause": "K.3.9",
+  "services": {},
+  "title": "Scheduling-Timer-Internal-B"
+ },
+ "SCHED-VM-A": {
+  "clause": "K.3.6",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Scheduling-View and Modify-A"
+ },
+ "SCHED-WS-A": {
+  "clause": "K.3.7",
+  "services": {
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Scheduling-Weekly Schedule-A"
+ },
+ "SCHED-WS-I-B": {
+  "clause": "K.3.8",
+  "services": {
+   "read-property": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "time-synchronization": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "utc-time-synchronization": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "write-property": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Scheduling-Weekly Schedule-Internal-B"
+ },
+ "T-A-A": {
+  "clause": "K.4.13",
+  "services": {},
+  "title": "Trending-Archival-A"
+ },
+ "T-AMVR-A": {
+  "clause": "K.4.9",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Trending-Automated Multiple Value Retrieval-A"
+ },
+ "T-AMVR-B": {
+  "clause": "K.4.10",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Trending-Automated Multiple Value Retrieval-B"
+ },
+ "T-ATR-A": {
+  "clause": "K.4.4",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "unconfirmed-event-notification": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Trending-Automated Trend Retrieval-A"
+ },
+ "T-ATR-B": {
+  "clause": "K.4.5",
+  "services": {
+   "confirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   },
+   "unconfirmed-event-notification": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Trending-Automated Trend Retrieval-B"
+ },
+ "T-AVM-A": {
+  "clause": "K.4.12",
+  "services": {
+   "create-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "delete-object": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-property": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   },
+   "write-property": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Trending-Advanced View and Modify-A"
+ },
+ "T-V-A": {
+  "clause": "K.4.11",
+  "services": {
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Trending-View-A"
+ },
+ "T-VMMV-A": {
+  "clause": "K.4.6",
+  "services": {
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Trending-Viewing and Modifying Multiple Values-A"
+ },
+ "T-VMMV-E-B": {
+  "clause": "K.4.8",
+  "services": {},
+  "title": "Trending-Viewing and Modifying Multiple Values-External-B"
+ },
+ "T-VMMV-I-B": {
+  "clause": "K.4.7",
+  "services": {
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Trending-Viewing and Modifying Multiple Values-Internal-B"
+ },
+ "T-VMT-A": {
+  "clause": "K.4.1",
+  "services": {
+   "read-range": {
+    "execute": "",
+    "initiate": "x"
+   }
+  },
+  "title": "Trending-Viewing and Modifying Trends-A"
+ },
+ "T-VMT-E-B": {
+  "clause": "K.4.3",
+  "services": {},
+  "title": "Trending-Viewing and Modifying Trends-External-B"
+ },
+ "T-VMT-I-B": {
+  "clause": "K.4.2",
+  "services": {
+   "read-range": {
+    "execute": "x",
+    "initiate": ""
+   }
+  },
+  "title": "Trending-Viewing and Modifying Trends-Internal-B"
+ }
+}
