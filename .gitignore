@@ -2,6 +2,9 @@
 .venv/
 reports/
 
+# no secret agent files
+.agents/
+
 # Python specific files and folders
 # Byte-compiled / optimized / DLL files
 __pycache__/
