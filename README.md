@@ -50,22 +50,29 @@ Run all applicable tests against device instance 1234:
 bacpicker -a 192.168.1.10/24 -d 1234 -r console -r html -r junit -o reports
 ```
 
-Common options:
+Options:
 
 | Option | Purpose |
 |---|---|
 | `-a, --address` | Local BACnet/IP address, e.g. `192.168.1.10/24` or `192.168.1.10/24:47809`. Without a port, BACpicker binds UDP 47823 (0xBACF) and sends broadcasts to 47808 (0xBAC0), so it can run on the same host as a device. With an explicit port, broadcasts go to that port. |
+| `--tester-instance` | Tester's own device instance (default 4194301) |
+| `--bbmd HOST[:PORT]` | Register as a foreign device with a BBMD |
+| `--bbmd-ttl` | Foreign device registration TTL in seconds (default 300) |
 | `-d, --device-instance` | IUT device instance |
 | `-t, --target` | IUT address; Who-Is is sent directly to it |
 | `--unicast` | Send Who-Is/Who-Has to `--target` instead of broadcasting |
-| `--bbmd` | Register as a foreign device with a BBMD |
-| `-i, --include` / `-x, --exclude` | Clause patterns, e.g. `-i '9.18.*' -x '9.18.1.6'` |
+| `-i, --include` / `-x, --exclude` | Clause patterns, e.g. `-i '9.18.*' -x '9.18.1.6'` (repeatable) |
 | `--allow-writes` | Enable tests and probes that write to the IUT |
 | `--epics FILE` | EPICS with the user-declared sections (see below) |
 | `--generate-epics FILE` | Read the IUT, write an EPICS, and exit |
-| `--unconfirmed-response-fail-time` / `--internal-processing-fail-time` | 135.1 timers (default: from the EPICS, else 3 s) |
-| `-r, --report` | `console`, `json`, `junit`, `markdown`, `html`, `epics` (repeatable) |
+| `--unconfirmed-response-fail-time` / `--internal-processing-fail-time` | 135.1 timers in seconds (default: from the EPICS, else 3 s) |
+| `--timeout` | Per-test timeout in seconds (default 120) |
+| `--max-objects` | Maximum objects visited by tests that walk the Object_List (default 50) |
+| `--list-tests` | List the registered tests and exit |
+| `-r, --report` | `console`, `json`, `junit`, `markdown`, `html`, `epics` (repeatable; default `console`) |
+| `-o, --output-dir` | Directory for report files (default `reports`): `report.json`, `report.junit.xml`, `report.md`, `report.html`, `report.epics` |
 | `-v, --verbose` / `--debug` | Show test steps / log protocol traffic |
+| `--version` | Print the version and exit |
 
 Exit status is 0 when every test passes or is skipped, 1 if any test fails or errors, and
 2 if the IUT cannot be discovered.

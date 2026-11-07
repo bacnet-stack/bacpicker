@@ -69,7 +69,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     out = p.add_argument_group("reporting")
     out.add_argument("-r", "--report", action="append", choices=FORMATS + ("epics",), metavar="FORMAT",
                      help=f"report format, repeatable: {', '.join(FORMATS)}, epics (default console)")
-    out.add_argument("-o", "--output-dir", type=Path, default=Path("reports"))
+    out.add_argument("-o", "--output-dir", type=Path, default=Path("reports"), metavar="DIR",
+                     help="directory for report files (default: reports)")
     out.add_argument("-v", "--verbose", action="store_true", help="show test steps")
     out.add_argument("--debug", action="store_true", help="log protocol traffic")
 
