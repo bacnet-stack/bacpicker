@@ -171,3 +171,7 @@ stops failing, so the list stays accurate.
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full text.
+
+ASHRAE® and BACnet® are registered trademarks of the
+American Society of Heating, Refrigerating and Air-Conditioning Engineers, Inc.
+180 Technology Parkway NW, Peachtree Corners, Georgia 30092 US.
