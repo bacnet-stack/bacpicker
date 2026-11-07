@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from bacpypes3.basetypes import ChannelValue, ObjectTypesSupported
+from bacpypes3.basetypes import ChannelValue, ObjectTypesSupported, ReadAccessResultElement
 from bacpypes3.local.object import Object as LocalObject
 from bacpypes3.object import LightingOutputObject
 from bacpypes3.pdu import PDUData
@@ -49,6 +49,12 @@ def test_names():
     # bit names set the encoded length, which must stay at Protocol_Revision 22's 63 bits
     assert ObjectTypesSupported._bitstring_length == 63
     assert str(ColorOperation(4)) == "step-up-cct"
+    # context-tagged fields are Enumerated subclasses created before the names were added
+    property_class = ReadAccessResultElement._elements["propertyIdentifier"]
+    assert property_class is not PropertyIdentifier
+    assert str(property_class(4194328)) == "color-override"
+    object_type_class = ObjectIdentifier("color,1").object_type_class
+    assert str(object_type_class(63)) == "color"
 
 
 def test_object_classes():

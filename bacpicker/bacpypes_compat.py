@@ -47,6 +47,10 @@ PROPERTY_IDENTIFIERS = {
 
 
 def _add_enumeration(cls: Any, attr: str, value: int) -> None:
+    # Enumerated subclasses copy the maps when created, and BACpypes3 has already
+    # made one per context-tagged field (e.g. ReadAccessResultElement.propertyIdentifier)
+    for subclass in cls.__subclasses__():
+        _add_enumeration(subclass, attr, value)
     if attr in cls._enum_map:
         return
     name = attr_to_asn1(attr)
