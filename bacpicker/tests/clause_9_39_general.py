@@ -310,6 +310,8 @@ def _minimal_unconfirmed(ctx: TestContext, choice: int, name: str) -> APDU:
 # need --allow-writes.
 @conformance_test("9.39.1", "Unsupported Confirmed Services Test", writes=True)
 async def unsupported_confirmed_services(ctx: TestContext) -> None:
+    if ctx.iut.services_supported_length is None:
+        ctx.skip("Protocol_Services_Supported was not read; unsupported services are unknown")
     tester = ctx.app.device_object
     saved = (tester.apduTimeout, tester.numberOfApduRetries)
     tester.apduTimeout, tester.numberOfApduRetries = 500, 0
