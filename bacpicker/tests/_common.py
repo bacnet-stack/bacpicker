@@ -562,6 +562,9 @@ async def writable_properties(ctx: TestContext, objid: ObjectIdentifier) -> List
                 names.add(name)
             elif prop.writable is False:
                 names.discard(name)
+        priority_array = record.properties.get("priority-array")
+        if priority_array is not None and priority_array.error is None:
+            commandable.add("present-value")
     return sorted(names - commandable)
 
 
