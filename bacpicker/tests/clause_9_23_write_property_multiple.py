@@ -248,11 +248,11 @@ async def property_access_error(ctx: TestContext) -> None:
         [(objid, [(prop, new, None, None, True), (bad, Unsigned(1), None, None, False)])],
     )
     ctx.step("3. RECEIVE WritePropertyMultiple-Error PROPERTY / UNKNOWN_PROPERTY")
-    err = await _wpm_error(ctx, request, "property", "unknown-property")
-    attempt = getattr(err, "firstFailedWriteAttempt", None)
-    if attempt is not None:
-        ctx.check_equal(attempt.propertyIdentifier, bad, "first failed property is wrong")
     try:
+        err = await _wpm_error(ctx, request, "property", "unknown-property")
+        attempt = getattr(err, "firstFailedWriteAttempt", None)
+        if attempt is not None:
+            ctx.check_equal(attempt.propertyIdentifier, bad, "first failed property is wrong")
         ctx.step("4. VERIFY the first property was written")
         ctx.check_equal(await ctx.read(objid, prop), new, f"{prop} was not written before the failure")
     finally:
