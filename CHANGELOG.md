@@ -45,5 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - HTML report showed each test step number twice.
+- On Windows, listening for broadcasts on port 47808 failed with "reuse_port not
+  supported by socket module".
 
 [Unreleased]: https://github.com/bacnet-stack/bacpicker/commits/default
