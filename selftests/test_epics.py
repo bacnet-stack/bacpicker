@@ -24,7 +24,7 @@ async def generate(config, path):
 def uncomment(path, *bibbs):
     text = path.read_bytes().decode("utf-8")
     for bibb in bibbs:
-        text = text.replace(f"\r\n-- {bibb} ", f"\r\n{bibb} ", 1)
+        text = text.replace(f"\r\n-- {bibb}\r\n", f"\r\n{bibb}\r\n", 1)
     path.write_bytes(text.encode("utf-8"))
 
 
@@ -33,8 +33,21 @@ async def test_generated_epics_round_trip(loopback_config, tmp_path):
     await generate(loopback_config, path)
     assert path.read_bytes().startswith(b"PICS 0\r\nBACnet Protocol Implementation Conformance Statement\r\n")
 
+    text = path.read_bytes().decode("utf-8")
+    assert "DS-RP-B            -- executes ReadProperty" in text
+    assert "\r\n-- SCHED-I-B\r\n" in text
+
     epics = parse_epics(path)
-    assert epics.bibbs == ["DS-RP-B"]
+    assert epics.bibbs == [
+        "DM-DDB-B",
+        "DM-DOB-B",
+        "DS-ACSC-B",
+        "DS-ACUC-B",
+        "DS-RP-B",
+        "DS-RPM-B",
+        "DS-WP-B",
+        "NM-RC-B",
+    ]
     assert epics.general["vendor name"] == "BACpypes"
     assert epics.services["read-property"] == {"execute"}
     assert epics.services["i-am"] == {"initiate"}
@@ -45,8 +58,18 @@ async def test_generated_epics_round_trip(loopback_config, tmp_path):
     assert av1.properties["object-name"].value == '"Zone Temperature"'
     assert not epics.unknown
 
-    uncomment(path, "DM-DDB-B")
-    assert parse_epics(path).bibbs == ["DM-DDB-B", "DS-RP-B"]
+    uncomment(path, "SCHED-I-B")
+    assert parse_epics(path).bibbs == [
+        "DM-DDB-B",
+        "DM-DOB-B",
+        "DS-ACSC-B",
+        "DS-ACUC-B",
+        "DS-RP-B",
+        "DS-RPM-B",
+        "DS-WP-B",
+        "NM-RC-B",
+        "SCHED-I-B",
+    ]
 
 
 async def test_bibb_consistency(loopback_config, tmp_path):
