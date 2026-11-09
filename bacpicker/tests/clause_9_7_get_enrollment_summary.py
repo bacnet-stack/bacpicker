@@ -12,6 +12,7 @@ from bacpypes3.primitivedata import ObjectIdentifier
 
 from ..context import TestContext
 from ..registry import conformance_test
+from ._common import all_objects
 
 SERVICE = ["get-enrollment-summary"]
 
@@ -19,7 +20,7 @@ SERVICE = ["get-enrollment-summary"]
 async def _acked(ctx: TestContext) -> List[Tuple[ObjectIdentifier, bool]]:
     """(object, every transition acknowledged) for objects that expose Acked_Transitions."""
     found = []
-    for objid in ctx.test_objects():
+    for objid in all_objects(ctx):
         if "acked-transitions" not in ctx.model_properties(objid):
             continue
         try:

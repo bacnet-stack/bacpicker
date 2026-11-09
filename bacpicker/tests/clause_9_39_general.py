@@ -140,6 +140,8 @@ def _event(ctx: TestContext, confirmed: bool):
         priority=100,
         eventType="change-of-state",
         notifyType="alarm",
+        ackRequired=False,
+        fromState="normal",
         toState="offnormal",
         eventValues=values,
         destination=ctx.iut.address,
@@ -303,13 +305,16 @@ def _minimal_unconfirmed(ctx: TestContext, choice: int, name: str) -> APDU:
     return request
 
 
-@conformance_test("9.39.1", "Unsupported Confirmed Services Test")
+# Probes for unsupported services can change the IUT if a handler runs anyway (write a file,
+# disable initiation, reinitialize, reset life-safety objects, set the clock), so both tests
+# need --allow-writes.
+@conformance_test("9.39.1", "Unsupported Confirmed Services Test", writes=True)
 async def unsupported_confirmed_services(ctx: TestContext) -> None:
     tester = ctx.app.device_object
     saved = (tester.apduTimeout, tester.numberOfApduRetries)
     tester.apduTimeout, tester.numberOfApduRetries = 500, 0
-    object_name = str(await ctx.read(ctx.iut.device_id, "object-name"))
     try:
+        object_name = str(await ctx.read(ctx.iut.device_id, "object-name"))
         for choice, name in CONFIRMED:
             if ctx.iut.supports_service(name):
                 continue
@@ -323,7 +328,7 @@ async def unsupported_confirmed_services(ctx: TestContext) -> None:
         tester.apduTimeout, tester.numberOfApduRetries = saved
 
 
-@conformance_test("9.39.2", "Unsupported Unconfirmed Services Test")
+@conformance_test("9.39.2", "Unsupported Unconfirmed Services Test", writes=True)
 async def unsupported_unconfirmed_services(ctx: TestContext) -> None:
     device = ctx.iut.device_id
     ctx.step("1. VERIFY System_Status = OPERATIONAL or OPERATIONAL_READ_ONLY")

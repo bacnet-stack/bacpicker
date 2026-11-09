@@ -80,6 +80,15 @@ async def test_write_tests_restore_iut(loopback_config, simulated_iut):
     assert av1.objectName == "Zone Temperature"
 
 
+async def test_unsupported_service_probes_need_allow_writes(loopback_config):
+    loopback_config.allow_writes = True
+    _profile, report = await run_suite(loopback_config, include=["9.39.1", "9.39.2"])
+    by_clause = {r.clause: r for r in report.results}
+    # the simulator's handlers run for services its Protocol_Services_Supported clears
+    assert by_clause["9.39.1"].status is Status.FAIL, by_clause["9.39.1"]
+    assert by_clause["9.39.2"].status is Status.PASS, by_clause["9.39.2"]
+
+
 async def test_detects_defect(loopback_config, simulated_iut):
     sim, _address = simulated_iut
     # make the simulator answer a Who-Is that excludes it
@@ -110,5 +119,4 @@ KNOWN_SIMULATOR_DEFECTS = {
     "9.20.1.14": "no support for the Network Port 4194303 wildcard instance",
     "9.22.2.6": "WriteProperty of an unknown property returns DEVICE / OPERATIONAL_PROBLEM",
     "9.22.2.7": "accepts WriteProperty of read-only Object_Type",
-    "9.39.1": "handlers run for services the PICS bitstring clears, and unknown choices get no Reject",
 }

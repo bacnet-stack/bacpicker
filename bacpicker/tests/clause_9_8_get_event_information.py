@@ -12,7 +12,7 @@ from bacpypes3.primitivedata import ObjectIdentifier
 
 from ..context import TestContext
 from ..registry import conformance_test
-from ._common import register_manual
+from ._common import all_objects, register_manual
 
 SERVICE = ["get-event-information"]
 
@@ -20,7 +20,7 @@ SERVICE = ["get-event-information"]
 async def _events(ctx: TestContext) -> List[Tuple[ObjectIdentifier, str, Optional[List[int]]]]:
     """Objects with a non-NORMAL Event_State or an unacknowledged transition."""
     found = []
-    for objid in ctx.test_objects():
+    for objid in all_objects(ctx):
         if "event-state" not in ctx.model_properties(objid):
             continue
         try:
@@ -82,7 +82,7 @@ async def one_active_event(ctx: TestContext) -> None:
 
 @conformance_test("9.8.3", "Event Information with Multiple Active Events", services=SERVICE)
 async def multiple_active_events(ctx: TestContext) -> None:
-    capable = [o for o in ctx.test_objects() if "event-state" in ctx.model_properties(o)]
+    capable = [o for o in all_objects(ctx) if "event-state" in ctx.model_properties(o)]
     if len(capable) < 2:
         ctx.skip("the IUT does not contain more than one object that can detect alarms")
     active = await _events(ctx)

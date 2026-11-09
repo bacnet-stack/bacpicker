@@ -24,6 +24,13 @@ from ._common import expect_simple_ack, register_manual
 
 SERVICE = ["subscribe-cov"]
 _PID = 1001
+_PROBE_PID = _PID + 9
+_COV_OBJECT = "9.10 cov object"
+# object types that commonly report COV; they are probed first
+_COV_TYPES = (
+    "analog-input", "analog-output", "analog-value", "binary-input", "binary-output", "binary-value",
+    "multi-state-input", "multi-state-output", "multi-state-value",
+)
 
 
 def _request(
@@ -86,19 +93,48 @@ async def _notification(ctx: TestContext, objid: ObjectIdentifier, confirmed: bo
     return True
 
 
-def _cov_object(ctx: TestContext) -> ObjectIdentifier:
-    for objid in ctx.iut.object_list:
-        if str(objid[0]) in ("analog-input", "analog-output", "analog-value", "binary-input",
-            "binary-output", "binary-value"):
-            return objid
-    if len(ctx.iut.object_list) > 1:
-        return next(o for o in ctx.iut.object_list if o != ctx.iut.device_id)
-    return ctx.iut.device_id
+async def _cancel(ctx: TestContext, objid: ObjectIdentifier, pid: int) -> None:
+    """Cancel a subscription the tester made. A failed cancel is recorded; it is not part of the
+    135.1 procedure."""
+    request = _request(ctx, objid, None, None, pid=pid)
+    try:
+        await ctx.send(request)
+    except ErrorRejectAbortNack as err:
+        ctx.defect(f"Could not cancel COV subscription {pid} for {objid}", expected="BACnet-SimpleACK-PDU",
+            actual=format_pdu(err), request=request, response=err)
+
+
+async def _cov_object(ctx: TestContext) -> ObjectIdentifier:
+    """An object that accepts a COV subscription, found by subscribing and then cancelling.
+
+    SubscribeCOV support is device-wide; it does not mean every object supports COV, so the
+    object type alone does not establish the 135.1 "object supporting COV notifications".
+    """
+    if _COV_OBJECT in ctx.shared:
+        found = ctx.shared[_COV_OBJECT]
+        if found is None:
+            ctx.skip("no object accepted a SubscribeCOV probe, so no COV-capable object is known")
+        return found
+    candidates = sorted(
+        (o for o in ctx.test_objects() if o != ctx.iut.device_id),
+        key=lambda o: str(o[0]) not in _COV_TYPES,
+    )
+    for objid in candidates:
+        try:
+            await ctx.send(_request(ctx, objid, False, 60, pid=_PROBE_PID))
+        except ErrorRejectAbortNack:
+            continue
+        await _cancel(ctx, objid, _PROBE_PID)
+        ctx.note(f"{objid} accepted a SubscribeCOV probe; using it as the monitored object")
+        ctx.shared[_COV_OBJECT] = objid
+        return objid
+    ctx.shared[_COV_OBJECT] = None
+    ctx.skip("no object accepted a SubscribeCOV probe, so no COV-capable object is known")
 
 
 @conformance_test("9.10.1.1", "Confirmed COV Notifications", services=SERVICE)
 async def confirmed_notifications(ctx: TestContext) -> None:
-    objid = _cov_object(ctx)
+    objid = await _cov_object(ctx)
     ctx.shared["9.10.1.1"] = (_PID, objid)
     ok = await _notification(ctx, objid, True, _request(ctx, objid, True, 60))
     if not ok:
@@ -107,14 +143,19 @@ async def confirmed_notifications(ctx: TestContext) -> None:
 
 @conformance_test("9.10.1.2", "Unconfirmed COV Notifications", services=SERVICE)
 async def unconfirmed_notifications(ctx: TestContext) -> None:
-    await _notification(ctx, _cov_object(ctx), False, _request(ctx, _cov_object(ctx), False, 60,
-        pid=_PID + 1))
+    objid = await _cov_object(ctx)
+    await _notification(ctx, objid, False, _request(ctx, objid, False, 60, pid=_PID + 1))
 
 
 @conformance_test("9.10.1.3", "Explicit Indefinite Lifetime COV Subscriptions", services=SERVICE)
 async def explicit_indefinite(ctx: TestContext) -> None:
-    objid = _cov_object(ctx)
-    await _notification(ctx, objid, False, _request(ctx, objid, False, 0, pid=_PID + 2))
+    objid = await _cov_object(ctx)
+    pid = _PID + 2
+    try:
+        await _notification(ctx, objid, False, _request(ctx, objid, False, 0, pid=pid))
+    finally:
+        ctx.note("cleanup: cancel the indefinite subscription")
+        await _cancel(ctx, objid, pid)
 
 
 @conformance_test(
@@ -132,7 +173,7 @@ async def canceling(ctx: TestContext) -> None:
 
 @conformance_test("9.10.1.5", "Canceling Expired or Non-Existing Subscriptions", services=SERVICE)
 async def cancel_missing(ctx: TestContext) -> None:
-    objid = _cov_object(ctx)
+    objid = await _cov_object(ctx)
     ctx.step("1. TRANSMIT SubscribeCOV-Request cancelling a process identifier that was never subscribed")
     ctx.step("2. RECEIVE BACnet-SimpleACK-PDU")
     await expect_simple_ack(ctx, _request(ctx, objid, None, None, pid=4000000))
@@ -140,15 +181,23 @@ async def cancel_missing(ctx: TestContext) -> None:
 
 @conformance_test("9.10.1.6", "Implied Indefinite Lifetime COV Subscriptions", services=SERVICE)
 async def implied_indefinite(ctx: TestContext) -> None:
-    objid = _cov_object(ctx)
-    request = _request(ctx, objid, True, None, pid=_PID + 3)
-    await _notification(ctx, objid, True, request)
+    objid = await _cov_object(ctx)
+    pid = _PID + 3
+    try:
+        await _notification(ctx, objid, True, _request(ctx, objid, True, None, pid=pid))
+    finally:
+        ctx.note("cleanup: cancel the indefinite subscription")
+        await _cancel(ctx, objid, pid)
 
 
-@conformance_test("9.10.1.7", "Finite Lifetime Subscriptions", services=SERVICE)
-async def finite_lifetime(ctx: TestContext) -> None:
-    objid = _cov_object(ctx)
-    await _notification(ctx, objid, False, _request(ctx, objid, False, 30, pid=_PID + 4))
+register_manual(
+    "9.10.1.7",
+    "Finite Lifetime Subscriptions",
+    "requires changing the monitored object (MAKE) to check that Time Remaining decreases over a"
+        " 60 to 300 second lifetime",
+    services=SERVICE,
+    writes=True,
+)
 
 
 register_manual(
@@ -237,7 +286,7 @@ register_manual(
 
 @conformance_test("9.10.2.4", "The Lifetime Parameter is Out of Range", services=SERVICE)
 async def lifetime_out_of_range(ctx: TestContext) -> None:
-    objid = _cov_object(ctx)
+    objid = await _cov_object(ctx)
     ctx.step("1. TRANSMIT SubscribeCOV-Request, Lifetime = 4294967294")
     request = _request(ctx, objid, True, 4294967294, pid=_PID + 7)
     revision = ctx.iut.protocol_revision

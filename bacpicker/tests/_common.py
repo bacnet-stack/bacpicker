@@ -19,6 +19,7 @@ from bacpypes3.apdu import (
     WritePropertyRequest,
 )
 from bacpypes3.basetypes import (
+    PriorityValue,
     PropertyIdentifier,
     PropertyReference,
     PropertyValue,
@@ -26,7 +27,7 @@ from bacpypes3.basetypes import (
     WriteAccessSpecification,
 )
 from bacpypes3.constructeddata import Array, SequenceOf
-from bacpypes3.primitivedata import Null, ObjectIdentifier, ObjectType, Unsigned
+from bacpypes3.primitivedata import Boolean, Enumerated, Null, ObjectIdentifier, ObjectType, Unsigned
 
 from ..assertions import SkipTest, format_pdu
 from ..context import BASE_TYPES, TestContext, application_tag, base_type, value_tags
@@ -243,6 +244,22 @@ async def verify(
     return element
 
 
+def all_objects(ctx: TestContext) -> List[ObjectIdentifier]:
+    """Every object in the IUT, for checks against a device-wide summary.
+
+    Raises SkipTest when --max-objects truncates the scan, since an object outside the scan
+    could make a correct summary look wrong.
+    """
+    objects = [ctx.iut.device_id] + [o for o in ctx.iut.object_list if o != ctx.iut.device_id]
+    limit = max(1, ctx.config.max_objects)
+    if len(objects) > limit:
+        raise SkipTest(
+            f"the IUT has {len(objects)} objects but --max-objects is {limit}; "
+            "a device-wide summary needs every object"
+        )
+    return objects
+
+
 def iut_instance_ranges(ctx: TestContext) -> dict:
     """Device instance ranges relative to the IUT instance X used by 9.32 / 9.33."""
     x = ctx.iut.device_instance
@@ -393,22 +410,28 @@ def cast_property(ctx: TestContext, objid: ObjectIdentifier, prop: str, value: A
     return ptype(value)
 
 
+_ENUM_ALTERNATES = {
+    "active": "inactive",
+    "inactive": "active",
+    "operational": "operational-read-only",
+    "operational-read-only": "operational",
+}
+
+
 def different_value(current: Any) -> Any:
     """Another valid value of the same primitive type, or None when none is known."""
-    if isinstance(current, bool):
-        return not current
+    # Enumerated and Boolean are int subclasses in bacpypes3, so test them before int
+    if isinstance(current, Enumerated):
+        return _ENUM_ALTERNATES.get(str(current))
+    if isinstance(current, (bool, Boolean)):
+        return not bool(current)
     if isinstance(current, float):
         return current + 1.0
-    if isinstance(current, int) and not isinstance(current, bool):
+    if isinstance(current, int):
         return current + 1
     if isinstance(current, str):
         return f"{current}-{uuid.uuid4().hex[:4]}"
-    text = str(current)
-    if text in ("active", "inactive"):
-        return "inactive" if text == "active" else "active"
-    if text in ("operational", "operational-read-only"):
-        return "operational-read-only" if text == "operational" else "operational"
-    return None
+    return _ENUM_ALTERNATES.get(str(current))
 
 
 def wp_request(
@@ -502,6 +525,42 @@ async def restore(ctx: TestContext, change: Written) -> None:
 async def expect_simple_ack(ctx: TestContext, request: Any) -> bool:
     ack = await ctx.expect_ack(request, SimpleAckPDU)
     return ack is not None
+
+
+def priority_slot_value(slot: Any) -> Any:
+    """The application value held in a BACnetPriorityValue; Null for an empty slot."""
+    if not isinstance(slot, PriorityValue):
+        return slot
+    for name in PriorityValue._elements:
+        value = getattr(slot, name, None)
+        if value is not None:
+            return Null(()) if name == "null" else value
+    return Null(())
+
+
+def restore_priority_slot(objid: ObjectIdentifier, slot: Any, priority: int = 16) -> Written:
+    """Put back a Priority_Array entry read before a write: relinquish only if it was NULL."""
+    value = priority_slot_value(slot)
+    if isinstance(value, Enumerated):
+        value = int(value)
+    return Written(objid, "present-value", value, priority=priority)
+
+
+async def writable_properties(ctx: TestContext, objid: ObjectIdentifier) -> List[str]:
+    """Properties known to be writable: conformance code W, or accepted by the --allow-writes
+    write-back probe. Commandable properties are excluded, since a write changes the priority array."""
+    spec = object_spec(str(objid[0]))
+    commandable = {p.name for p in spec.properties if p.commandable} if spec else set()
+    names = {p.name for p in spec.properties if p.writable} if spec else set()
+    database = await ctx.test_database()
+    record = database.objects.get(objid)
+    if record is not None:
+        for name, prop in record.properties.items():
+            if prop.writable is True:
+                names.add(name)
+            elif prop.writable is False:
+                names.discard(name)
+    return sorted(names - commandable)
 
 
 def read_only_property(ctx: TestContext) -> Tuple[ObjectIdentifier, str, Any]:

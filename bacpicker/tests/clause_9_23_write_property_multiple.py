@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any, List, Optional, Sequence, Tuple
 
 from bacpypes3.apdu import ErrorRejectAbortNack, RejectPDU, WritePropertyMultipleError
-from bacpypes3.primitivedata import Date, Null, Time, Unsigned
+from bacpypes3.primitivedata import Date, Time, Unsigned
 
 from ..assertions import error_class_code, format_pdu
 from ..context import TestContext
@@ -16,10 +16,13 @@ from ..registry import conformance_test
 from ..standard import object_spec
 from ._common import (
     Written,
+    cast_property,
     different_value,
     expect_simple_ack,
     is_array,
+    priority_slot_value,
     restore,
+    restore_priority_slot,
     wpm_request,
 )
 
@@ -62,9 +65,10 @@ async def _write_and_check(ctx: TestContext, rows: Sequence[Scalar], priority: O
     request = wpm_request(ctx, list(groups.items()))
     ctx.step("TRANSMIT WritePropertyMultiple-Request")
     ctx.step("RECEIVE BACnet-SimpleACK-PDU")
-    if not await expect_simple_ack(ctx, request):
-        return
+    # earlier writes may have been applied before an error, so restore even without an ACK
     try:
+        if not await expect_simple_ack(ctx, request):
+            return
         ctx.step("VERIFY each written property")
         for objid, props in groups.items():
             for prop, new, _index, _priority, _cast in props:
@@ -148,22 +152,27 @@ async def commandable_without_priority(ctx: TestContext) -> None:
         if "priority-array" not in ctx.model_properties(objid):
             continue
         try:
+            slot = await ctx.read(objid, "priority-array", 16)
             current = await ctx.read(objid, "present-value")
         except ErrorRejectAbortNack:
             continue
         new = different_value(current)
         if new is None:
             continue
-        ctx.step(f"1. READ ({objid}), Present_Value")
+        ctx.step(f"1. READ X = ({objid}), Priority_Array, ARRAY INDEX = 16")
         request = wpm_request(ctx, [(objid, [("present-value", new, None, None, True)])])
         ctx.step("2. TRANSMIT WritePropertyMultiple-Request, Present_Value, no priority")
-        if not await expect_simple_ack(ctx, request):
-            return
         try:
+            if not await expect_simple_ack(ctx, request):
+                return
             ctx.step("3. VERIFY Priority_Array[16]")
-            ctx.check_equal(await ctx.read(objid, "priority-array", 16), new, "priority 16 was not written")
+            ctx.check_equal(
+                priority_slot_value(await ctx.read(objid, "priority-array", 16)),
+                cast_property(ctx, objid, "present-value", new),
+                "priority 16 was not written",
+            )
         finally:
-            await restore(ctx, Written(objid, "present-value", Null(), priority=16))
+            await restore(ctx, restore_priority_slot(objid, slot))
         return
     ctx.skip("no commandable Present_Value was found")
 
@@ -460,13 +469,20 @@ async def wrong_datatype(ctx: TestContext) -> None:
     ctx.step("1. TRANSMIT WritePropertyMultiple-Request Object_Name = Unsigned")
     request = wpm_request(ctx, [(device, [("object-name", Unsigned(1), None, None, False)])])
     try:
-        await ctx.send(request)
+        ack = await ctx.send(request)
     except RejectPDU as err:
         ctx.check(str(err.apduAbortRejectReason) in ("invalid-parameter-data-type", "invalid-tag"),
             "Wrong reject reason", response=err)
     except WritePropertyMultipleError as err:
         pair = tuple(str(part) for part in error_class_code(err))
         ctx.check(pair == ("property", "invalid-data-type"), "Wrong error", actual=pair, response=err)
+    except ErrorRejectAbortNack as err:
+        ctx.defect("Expected WritePropertyMultiple-Error or Reject", actual=format_pdu(err),
+            request=request, response=err)
+    else:
+        ctx.defect("Object_Name with the wrong datatype was acknowledged",
+            expected="WritePropertyMultiple-Error PROPERTY / INVALID_DATATYPE or Reject",
+            actual=format_pdu(ack), request=request)
     ctx.check_equal(await ctx.read(device, "object-name"), current, "Object_Name changed")
 
 

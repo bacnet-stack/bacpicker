@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from bacpypes3.apdu import CreateObjectRequest
 from bacpypes3.basetypes import CreateObjectRequestObjectSpecifier
-from bacpypes3.primitivedata import ObjectIdentifier, ObjectType, Unsigned
+from bacpypes3.primitivedata import ObjectIdentifier, ObjectType
 
 from ..context import TestContext
 from ..registry import conformance_test
@@ -36,13 +36,19 @@ for _clause, _title, _writes in (
     register_manual(_clause, _title, _CREATABLE, services=SERVICE, writes=_writes)
 
 
-def _unsupported_type(ctx: TestContext):
-    """A standard object type the IUT does not claim, or proprietary type 128."""
-    supported = set(ctx.iut.object_types_supported)
-    for name in ("analog-input", "analog-output", "binary-input", "binary-output", "file", "schedule"):
-        if name not in supported:
+def _unsupported_type(ctx: TestContext) -> str:
+    """A standard object type whose Protocol_Object_Types_Supported bit the IUT clears."""
+    length = ctx.iut.object_types_supported_length
+    if not ctx.iut.object_types_supported or not length:
+        ctx.skip("Protocol_Object_Types_Supported was not read; no known-unsupported object type")
+    numbers = {}
+    for name, number in ObjectType._enum_map.items():
+        numbers.setdefault(number, name)
+    for number in sorted(numbers):
+        name = numbers[number]
+        if number < length and not ctx.iut.supports_object_type(name):
             return name
-    return 128
+    ctx.skip("Protocol_Object_Types_Supported lists every standard object type it encodes")
 
 
 @conformance_test(
@@ -53,10 +59,9 @@ def _unsupported_type(ctx: TestContext):
 async def unsupported_by_type(ctx: TestContext) -> None:
     name = _unsupported_type(ctx)
     before = list(ctx.iut.object_list)
-    specifier = ObjectType(name) if isinstance(name, str) else Unsigned(name)
     ctx.step(f"1. TRANSMIT CreateObject-Request, Object Specifier = {name}")
     request = CreateObjectRequest(
-        objectSpecifier=CreateObjectRequestObjectSpecifier(objectType=specifier),
+        objectSpecifier=CreateObjectRequestObjectSpecifier(objectType=ObjectType(name)),
         destination=ctx.iut.address,
     )
     revision = ctx.iut.protocol_revision or 0
@@ -79,7 +84,7 @@ async def unsupported_by_type(ctx: TestContext) -> None:
 )
 async def unsupported_by_identifier(ctx: TestContext) -> None:
     name = _unsupported_type(ctx)
-    objid = ObjectIdentifier((name if isinstance(name, str) else 128, 4194300))
+    objid = ObjectIdentifier((ObjectType(name), 4194300))
     before = list(ctx.iut.object_list)
     ctx.step(f"1. TRANSMIT CreateObject-Request, Object Specifier = {objid}")
     request = CreateObjectRequest(

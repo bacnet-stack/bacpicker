@@ -12,21 +12,30 @@ from bacpypes3.primitivedata import ObjectIdentifier
 
 from ..context import TestContext
 from ..registry import conformance_test
+from ._common import all_objects
 
 SERVICE = ["get-alarm-summary"]
 
 
 async def _active(ctx: TestContext) -> List[ObjectIdentifier]:
-    """Objects whose Event_State is present and not NORMAL."""
+    """Active alarms (135-2024 13.10): Event_State is not NORMAL and Notify_Type is ALARM."""
     active = []
-    for objid in ctx.test_objects():
-        if "event-state" not in ctx.model_properties(objid):
+    for objid in all_objects(ctx):
+        props = ctx.model_properties(objid)
+        if "event-state" not in props:
             continue
         try:
             state = str(await ctx.read(objid, "event-state"))
         except ErrorRejectAbortNack:
             continue
-        if state != "normal":
+        if state == "normal" or "notify-type" not in props:
+            continue
+        try:
+            notify = str(await ctx.read(objid, "notify-type"))
+        except ErrorRejectAbortNack as err:
+            ctx.skip(f"Event_State of {objid} is {state} but its Notify_Type cannot be read ({err}), "
+                "so the active alarms are not known")
+        if notify == "alarm":
             active.append(objid)
     return active
 
@@ -44,7 +53,7 @@ async def _summary(ctx: TestContext):
 async def no_active_alarms(ctx: TestContext) -> None:
     active = await _active(ctx)
     if active:
-        ctx.skip(f"IUT has {len(active)} object(s) whose Event_State is not NORMAL")
+        ctx.skip(f"IUT has {len(active)} active alarm(s)")
     summaries = await _summary(ctx)
     if summaries is None:
         return
@@ -55,7 +64,7 @@ async def no_active_alarms(ctx: TestContext) -> None:
 async def one_active_alarm(ctx: TestContext) -> None:
     active = await _active(ctx)
     if len(active) != 1:
-        ctx.skip(f"IUT has {len(active)} active Event_State values; this test needs exactly one")
+        ctx.skip(f"IUT has {len(active)} active alarms; this test needs exactly one")
     summaries = await _summary(ctx)
     if summaries is None:
         return
@@ -66,12 +75,12 @@ async def one_active_alarm(ctx: TestContext) -> None:
 
 @conformance_test("9.6.3", "Alarm Summaries with Multiple Active Alarms", services=SERVICE)
 async def multiple_active_alarms(ctx: TestContext) -> None:
-    alarming = [o for o in ctx.test_objects() if "event-state" in ctx.model_properties(o)]
+    alarming = [o for o in all_objects(ctx) if "event-state" in ctx.model_properties(o)]
     if len(alarming) < 2:
         ctx.skip("the IUT does not contain more than one object that can detect alarms")
     active = await _active(ctx)
     if len(active) < 2:
-        ctx.skip(f"IUT has {len(active)} active Event_State values; this test needs more than one")
+        ctx.skip(f"IUT has {len(active)} active alarms; this test needs more than one")
     summaries = await _summary(ctx)
     if summaries is None:
         return

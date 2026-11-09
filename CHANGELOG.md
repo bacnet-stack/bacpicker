@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     can encode, other than VT and the removed RequestKey and Authenticate services.
     Procedures that need an alarm, a subscription from the IUT, a vendor password, a
     known file image, or a reboot are registered and reported as not automated.
+    The 9.39 unsupported-service tests require `--allow-writes`, since an IUT that
+    executes a service it does not claim could be changed by the probe.
 - Procedures that cannot be automated are registered and reported as SKIP with the reason.
 - EPICS generation from the IUT (`--generate-epics`) and EPICS parsing (`--epics`).
 - Reporters: console, JSON, JUnit XML, Markdown, HTML and EPICS.

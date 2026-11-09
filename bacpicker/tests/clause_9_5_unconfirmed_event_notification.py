@@ -34,6 +34,8 @@ def _request(
         priority=100,
         eventType="change-of-state",
         notifyType="alarm",
+        ackRequired=False,
+        fromState="normal",
         toState="offnormal",
         eventValues=NotificationParameters(
             changeOfState=NotificationParametersChangeOfState(

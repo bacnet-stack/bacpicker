@@ -8,19 +8,23 @@ from __future__ import annotations
 from typing import Any, Optional, Tuple
 
 from bacpypes3.apdu import ErrorRejectAbortNack
-from bacpypes3.primitivedata import Null, ObjectIdentifier, Unsigned
+from bacpypes3.primitivedata import ObjectIdentifier, Unsigned
 
 from ..context import TestContext
 from ..registry import conformance_test
 from ._common import (
     Written,
+    cast_property,
     different_value,
     expect_simple_ack,
     is_array,
+    priority_slot_value,
     ranged_property,
     read_only_property,
     restore,
+    restore_priority_slot,
     wp_request,
+    writable_properties,
 )
 
 SERVICE = ["write-property"]
@@ -70,7 +74,7 @@ async def _commandable(ctx: TestContext) -> Optional[Tuple[ObjectIdentifier, Any
 async def writing_one_array_element(ctx: TestContext) -> None:
     chosen = None
     for objid in ctx.test_objects():
-        for prop in sorted(ctx.model_properties(objid)):
+        for prop in await writable_properties(ctx, objid):
             if not is_array(ctx.property_type(objid, prop)):
                 continue
             try:
@@ -110,21 +114,23 @@ async def writing_commandable_without_priority(ctx: TestContext) -> None:
     found = await _commandable(ctx)
     if found is None:
         ctx.skip("no commandable Present_Value with a readable Priority_Array[16] was found")
-    objid, _slot = found
+    objid, slot = found
     current = await _read(ctx, objid, "present-value")
     new = different_value(current)
     ctx.step(f"1. READ X = ({objid}), Priority_Array, ARRAY INDEX = 16")
     ctx.step(f"2. TRANSMIT WriteProperty-Request ({objid}), Present_Value = {new} (no priority)")
     ctx.step("3. RECEIVE BACnet-SimpleACK-PDU")
-    if not await expect_simple_ack(ctx, wp_request(ctx, objid, "present-value", new)):
-        return
     try:
+        if not await expect_simple_ack(ctx, wp_request(ctx, objid, "present-value", new)):
+            return
         ctx.step("4. VERIFY Priority_Array, ARRAY INDEX = 16")
         ctx.check_equal(
-            await _read(ctx, objid, "priority-array", 16), new, "priority 16 was not written"
+            priority_slot_value(await _read(ctx, objid, "priority-array", 16)),
+            cast_property(ctx, objid, "present-value", new),
+            "priority 16 was not written",
         )
     finally:
-        await restore(ctx, Written(objid, "present-value", Null(), priority=16))
+        await restore(ctx, restore_priority_slot(objid, slot))
 
 
 @conformance_test(
@@ -165,8 +171,7 @@ async def writing_by_data_type(ctx: TestContext) -> None:
 
     covered = {}
     for objid in ctx.test_objects():
-        spec_names = sorted(ctx.model_properties(objid))
-        for prop in spec_names:
+        for prop in await writable_properties(ctx, objid):
             ptype = ctx.property_type(objid, prop)
             base = base_type(ptype)
             if base is None or base in covered or is_array(ptype):
