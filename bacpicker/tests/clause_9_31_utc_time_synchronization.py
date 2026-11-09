@@ -87,6 +87,8 @@ async def _sync(ctx: TestContext, destination, where: str) -> None:
     except ErrorRejectAbortNack:
         dst = False
     initial = _local(initial_date, initial_time)
+    if initial is None:
+        ctx.skip("Local_Date/Local_Time have unspecified or invalid fields; the IUT clock cannot be restored")
     ctx.step("1. READ InitialDate = Local_Date")
     ctx.step("2. READ InitialTime = Local_Time")
     ctx.step(f"3. TRANSMIT UTCTimeSynchronization-Request, DESTINATION = {where}, 1991-01-02 12:00:00 UTC")
