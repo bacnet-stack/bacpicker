@@ -250,6 +250,8 @@ def all_objects(ctx: TestContext) -> List[ObjectIdentifier]:
     Raises SkipTest when --max-objects truncates the scan, since an object outside the scan
     could make a correct summary look wrong.
     """
+    if not ctx.iut.object_list:
+        raise SkipTest("Object_List was not read; a device-wide summary needs every object")
     objects = [ctx.iut.device_id] + [o for o in ctx.iut.object_list if o != ctx.iut.device_id]
     limit = max(1, ctx.config.max_objects)
     if len(objects) > limit:
