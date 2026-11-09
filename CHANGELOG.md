@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `--generate-epics` lists every Annex K BIBB the device appears to support uncommented,
+  with the reason it was included. DS-RP-B stays uncommented even when ReadProperty
+  cannot be inferred, because every device must support it. The remaining BIBBs stay
+  commented out.
 - Without a port in `--address`, the tester binds UDP 47823 (0xBACF) and sends
   broadcasts to 47808 (0xBAC0), so it can run on the same host as the IUT.
 

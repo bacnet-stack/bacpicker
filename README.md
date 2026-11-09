@@ -83,16 +83,17 @@ The test database is read from the IUT, as the bacnet-stack `bacepics` tool does
 clause 5 checks compare the standard against live data. Information a device cannot
 report (BIBBs, Initiate support, W/C markings, value restrictions) comes from an EPICS:
 
-1. Generate an EPICS from the device. Every Annex K BIBB is listed but commented out, with
-   hints for the ones the device appears to support. DS-RP-B, required of all devices, is
-   listed uncommented:
+1. Generate an EPICS from the device. Annex K BIBBs the device appears to support are
+   listed uncommented, with a hint of why each was included. DS-RP-B, required of all
+   devices, is always listed uncommented. The remaining BIBBs are commented out:
 
    ```sh
    bacpicker -d 1234 --generate-epics iut.tpi
    ```
 
-2. Edit `iut.tpi`: uncomment the BIBBs the product supports, add `Initiate` to services the
-   product initiates, and adjust the Fail Times.
+2. Edit `iut.tpi`: comment out any listed BIBBs the product does not claim, uncomment any
+   that were missed, add `Initiate` to services the product initiates, and adjust the
+   Fail Times.
 
 3. Run the tests with the EPICS:
 
