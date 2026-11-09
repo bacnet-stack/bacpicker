@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import os
 import re
 from typing import Any, Callable, List, Optional, Tuple
 
@@ -66,14 +67,15 @@ class TesterApplication(Application):
                 protocol.server = server
                 return protocol
 
+            local_addr, reuse_port = broadcast_listen_address(server)
             try:
                 transport, protocol = await loop.create_datagram_endpoint(
-                    factory, local_addr=server.broadcast_address, allow_broadcast=True, reuse_port=True
+                    factory, local_addr=local_addr, allow_broadcast=True, reuse_port=reuse_port
                 )
             except OSError as err:
                 log.warning(
                     "cannot listen for broadcasts on %s:%d (%s); broadcast replies from the IUT will "
-                    "not be seen, use --target or --bbmd", *server.broadcast_address, err,
+                    "not be seen, use --target or --bbmd", *local_addr, err,
                 )
                 continue
             protocol.destination = LocalBroadcast()
@@ -107,6 +109,19 @@ class TesterApplication(Application):
     async def do_ConfirmedEventNotificationRequest(self, apdu: ConfirmedEventNotificationRequest) -> None:
         """135.1 event tests: the TD acknowledges confirmed event notifications."""
         await self.response(SimpleAckPDU(context=apdu))
+
+
+def broadcast_listen_address(server: Any, windows: Optional[bool] = None) -> Tuple[Tuple[str, int], bool]:
+    """Return the bind address and reuse_port flag for the extra broadcast listener.
+
+    Windows has no SO_REUSEPORT and cannot bind a broadcast address; like BACpypes3, it binds the
+    unicast address, which also receives broadcasts sent to that port.
+    """
+    if windows is None:
+        windows = os.name == "nt"
+    if windows:
+        return (server.local_address[0], server.broadcast_address[1]), False
+    return server.broadcast_address, True
 
 
 def build_application(config: RunConfig) -> TesterApplication:

@@ -67,6 +67,15 @@ Requires Python 3.9 or later.
 ```sh
 python3 -m venv .venv
 .venv/bin/pip install -e '.[dev]'
+source .venv/bin/activate
+```
+
+On Windows, use PowerShell:
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\Activate.ps1
 ```
 
 ## Usage

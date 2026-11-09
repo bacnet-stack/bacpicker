@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import io
+from types import SimpleNamespace
 
 from bacpypes3.pdu import Address
 from bacpypes3.primitivedata import ObjectIdentifier
 
 from bacpicker.config import RunConfig
 from bacpicker.context import DeviceProfile
+from bacpicker.iut import broadcast_listen_address
 from bacpicker.registry import TestCase, clause_sort_key
 from bacpicker.reporting.console import ConsoleReporter
 from bacpicker.reporting.markdown_html import render_html, render_markdown
@@ -101,3 +103,10 @@ async def test_reporters_render_defects():
     assert "values differ" in render_markdown(report)
     html = render_html(report)
     assert "&lt;a&gt;" in html and "<a>" not in html
+
+
+def test_broadcast_listen_address_per_platform():
+    server = SimpleNamespace(local_address=("192.0.2.10", 47823), broadcast_address=("192.0.2.255", 47808))
+    assert broadcast_listen_address(server, windows=False) == (("192.0.2.255", 47808), True)
+    # Windows has no SO_REUSEPORT and receives broadcasts on the unicast address
+    assert broadcast_listen_address(server, windows=True) == (("192.0.2.10", 47808), False)
