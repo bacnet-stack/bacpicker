@@ -84,8 +84,8 @@ clause 5 checks compare the standard against live data. Information a device can
 report (BIBBs, Initiate support, W/C markings, value restrictions) comes from an EPICS:
 
 1. Generate an EPICS from the device. Annex K BIBBs the device appears to support are
-   listed uncommented, with a hint of why each was included. The remaining BIBBs are
-   commented out:
+   listed uncommented, with a hint of why each was included. DS-RP-B, required of all
+   devices, is always listed uncommented. The remaining BIBBs are commented out:
 
    ```sh
    bacpicker -d 1234 --generate-epics iut.tpi

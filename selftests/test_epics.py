@@ -4,11 +4,15 @@
 from __future__ import annotations
 
 from test_end_to_end import run_suite
+from test_framework import make_profile
 
-from bacpicker.database import read_database
+from bacpicker.config import RunConfig
+from bacpicker.database import TestDatabase, read_database
 from bacpicker.epics import parse_epics, write_epics
 from bacpicker.iut import build_application, build_profile, discover_iut
+from bacpicker.registry import get_test
 from bacpicker.result import Status
+from bacpicker.runner import Runner
 
 
 async def generate(config, path):
@@ -70,6 +74,31 @@ async def test_generated_epics_round_trip(loopback_config, tmp_path):
         "NM-RC-B",
         "SCHED-I-B",
     ]
+
+
+def test_ds_rp_b_stays_uncommented_when_read_property_is_not_inferred(tmp_path):
+    path = tmp_path / "empty.tpi"
+    write_epics(path, make_profile(services_supported=set()), TestDatabase(), RunConfig())
+    assert "DS-RP-B            -- required of all BACnet devices" in path.read_text(encoding="utf-8")
+    assert parse_epics(path).bibbs == ["DS-RP-B"]
+
+    path = tmp_path / "who-is.tpi"
+    write_epics(path, make_profile(services_supported={"who-is"}), TestDatabase(), RunConfig())
+    text = path.read_text(encoding="utf-8")
+    assert "DS-RP-B            -- required of all BACnet devices" in text
+    assert "DM-DDB-B           -- executes Who-Is" in text
+    assert parse_epics(path).bibbs == ["DM-DDB-B", "DS-RP-B"]
+
+
+async def test_missing_read_property_fails_clause_5e(tmp_path):
+    path = tmp_path / "iut.tpi"
+    profile = make_profile(services_supported=set())
+    write_epics(path, profile, TestDatabase(), RunConfig())
+    result = await Runner(None, profile, RunConfig(), shared={"epics": parse_epics(path)}).run_one(
+        get_test("5(e)"), {}
+    )
+    assert result.status is Status.FAIL
+    assert any("DS-RP-B" in defect.message and "ReadProperty" in defect.message for defect in result.defects)
 
 
 async def test_bibb_consistency(loopback_config, tmp_path):

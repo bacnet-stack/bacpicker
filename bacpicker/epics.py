@@ -5,9 +5,10 @@
 
 The writer turns the test database read from the IUT into an EPICS. Annex K BIBBs the
 device appears to support are listed uncommented, with the reason each was included.
-The remaining Annex K BIBBs are listed commented out. The user reviews those claims
-(and can edit Initiate support, Fail Times and restrictions), then passes the file
-with --epics.
+DS-RP-B is always listed uncommented, because every device must support it; when that
+support cannot be inferred, the reason says so. The remaining Annex K BIBBs are listed
+commented out. The user reviews those claims (and can edit Initiate support, Fail Times
+and restrictions), then passes the file with --epics.
 """
 
 from __future__ import annotations
@@ -114,6 +115,11 @@ def format_value(value: Any) -> str:
 # ---- writer --------------------------------------------------------------------
 
 
+# Listed even when support cannot be inferred, so clause 5(e) still reports a missing
+# ReadProperty bit instead of skipping for lack of any declared BIBB.
+MANDATORY_BIBBS = {"DS-RP-B": "required of all BACnet devices"}
+
+
 def _suggested_bibbs(profile: Any, database: Any) -> Dict[str, str]:
     """B-side BIBBs whose execute services and object types the IUT appears to support."""
     present = {r.object_type for r in database.objects.values()}
@@ -159,12 +165,14 @@ def write_epics(path: Path, profile: Any, database: Any, config: Any) -> None:
         "BIBBs Supported:",
         "{",
         "-- Uncommented BIBBs are ones the device appears to support, based on",
-        "-- Protocol_Services_Supported and the objects present.",
+        "-- Protocol_Services_Supported and the objects present. DS-RP-B is",
+        "-- always listed; it is required of all BACnet devices.",
     ]
     suggestions = _suggested_bibbs(profile, database)
     for acronym in sorted(bibbs()):
-        if acronym in suggestions:
-            lines.append(f"{acronym:<19}-- {suggestions[acronym]}")
+        hint = suggestions.get(acronym) or MANDATORY_BIBBS.get(acronym)
+        if hint:
+            lines.append(f"{acronym:<19}-- {hint}")
         else:
             lines.append(f"-- {acronym}")
     lines += [
