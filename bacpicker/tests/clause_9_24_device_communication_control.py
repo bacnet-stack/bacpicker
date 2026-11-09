@@ -49,9 +49,11 @@ async def disable_not_supported(ctx: TestContext) -> None:
     ctx.step("1. TRANSMIT DeviceCommunicationControl-Request, Enable/Disable = DISABLE")
     request = DeviceCommunicationControlRequest(enableDisable="disable", destination=ctx.iut.address)
     ctx.step("2. RECEIVE BACnet-Error-PDU SERVICES / SERVICE_REQUEST_DENIED")
+    needs_recovery = True
     try:
         await ctx.send(request)
     except ErrorPDU as err:
+        needs_recovery = False
         pair = tuple(str(part) for part in error_class_code(err))
         if pair == ("security", "password-failure"):
             ctx.skip("IUT rejected the request for lack of a password; none was provided")
@@ -64,8 +66,10 @@ async def disable_not_supported(ctx: TestContext) -> None:
         )
     else:
         ctx.defect("PR >= 20 IUT accepted Enable/Disable = DISABLE", request=request)
-        enable = DeviceCommunicationControlRequest(enableDisable="enable", destination=ctx.iut.address)
-        if not await expect_simple_ack(ctx, enable):
-            ctx.note(f"could not re-enable communication: {format_pdu(enable)}")
+    finally:
+        if needs_recovery:
+            enable = DeviceCommunicationControlRequest(enableDisable="enable", destination=ctx.iut.address)
+            if not await expect_simple_ack(ctx, enable):
+                ctx.note(f"could not re-enable communication: {format_pdu(enable)}")
     ctx.step("3. VERIFY System_Status")
     ctx.check_equal(await ctx.read(device, "system-status"), status, "System_Status changed")
