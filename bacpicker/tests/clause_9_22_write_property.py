@@ -98,9 +98,9 @@ async def writing_one_array_element(ctx: TestContext) -> None:
     ctx.step(f"2. TRANSMIT WriteProperty-Request ({objid}), {prop}, ARRAY INDEX = 1")
     request = wp_request(ctx, objid, prop, new, 1)
     ctx.step("3. RECEIVE BACnet-SimpleACK-PDU")
-    if not await expect_simple_ack(ctx, request):
-        return
     try:
+        if not await expect_simple_ack(ctx, request):
+            return
         ctx.step(f"4. VERIFY ({objid}), {prop}, ARRAY INDEX = 1")
         ctx.check_equal(await _read(ctx, objid, prop, 1), new, "array element was not written")
     finally:
