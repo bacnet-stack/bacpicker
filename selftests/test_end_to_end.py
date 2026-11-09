@@ -108,4 +108,7 @@ KNOWN_SIMULATOR_DEFECTS = {
     "9.20.1.9": "Network Port Link_Speed (optional in 135-2024) is returned for REQUIRED",
     "9.20.1.11": "no support for the Device 4194303 wildcard instance",
     "9.20.1.14": "no support for the Network Port 4194303 wildcard instance",
+    "9.22.2.6": "WriteProperty of an unknown property returns DEVICE / OPERATIONAL_PROBLEM",
+    "9.22.2.7": "accepts WriteProperty of read-only Object_Type",
+    "9.39.1": "handlers run for services the PICS bitstring clears, and unknown choices get no Reject",
 }

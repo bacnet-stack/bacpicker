@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import Any, List, NamedTuple, Optional, Sequence, Tuple, Union
 
 from bacpypes3.apdu import (
@@ -13,13 +14,24 @@ from bacpypes3.apdu import (
     ReadPropertyMultipleACK,
     ReadPropertyMultipleRequest,
     ReadPropertyRequest,
+    SimpleAckPDU,
+    WritePropertyMultipleRequest,
+    WritePropertyRequest,
 )
-from bacpypes3.basetypes import PropertyIdentifier, PropertyReference, ReadAccessSpecification
+from bacpypes3.basetypes import (
+    PropertyIdentifier,
+    PropertyReference,
+    PropertyValue,
+    ReadAccessSpecification,
+    WriteAccessSpecification,
+)
 from bacpypes3.constructeddata import Array, SequenceOf
-from bacpypes3.primitivedata import ObjectIdentifier, ObjectType, Unsigned
+from bacpypes3.primitivedata import Null, ObjectIdentifier, ObjectType, Unsigned
 
-from ..assertions import format_pdu
+from ..assertions import SkipTest, format_pdu
 from ..context import BASE_TYPES, TestContext, application_tag, base_type, value_tags
+from ..registry import conformance_test
+from ..standard import object_spec
 
 MAX_INSTANCE = 4194303
 COMMON_PROPERTIES = ("object-identifier", "object-name", "object-type")
@@ -339,3 +351,182 @@ async def network_port_unknown_instance(ctx: TestContext, service: str) -> None:
             expected=ctx.decode(port, prop, None, direct.value),
             actual=ctx.decode(port, prop, None, via_wildcard.value),
         )
+
+
+# ---- writes ----------------------------------------------------------------
+
+
+class Written(NamedTuple):
+    """A property the tester changed, so the test can put the previous value back."""
+
+    objid: ObjectIdentifier
+    prop: str
+    previous: Any
+    array_index: Optional[int] = None
+    priority: Optional[int] = None
+
+
+def register_manual(clause: str, title: str, reason: str, **options: Any):
+    """Register a 135.1 procedure the tester cannot execute, reported as SKIP."""
+
+    async def test(ctx: TestContext) -> None:
+        return None
+
+    test.__name__ = "manual_" + clause.replace(".", "_").replace("-", "_")
+    return conformance_test(clause, title, manual=reason, **options)(test)
+
+
+def is_array(ptype: Any) -> bool:
+    return isinstance(ptype, type) and issubclass(ptype, Array)
+
+
+def cast_property(ctx: TestContext, objid: ObjectIdentifier, prop: str, value: Any,
+    index: Optional[int] = None) -> Any:
+    """Encode value as the property's datatype. index selects an array element or the size."""
+    ptype = ctx.property_type(objid, prop)
+    if not isinstance(ptype, type):
+        return value
+    if issubclass(ptype, Array):
+        ptype = Unsigned if index == 0 else (ptype._subtype if index is not None else ptype)
+    if isinstance(value, (ptype, Null)):
+        return value
+    return ptype(value)
+
+
+def different_value(current: Any) -> Any:
+    """Another valid value of the same primitive type, or None when none is known."""
+    if isinstance(current, bool):
+        return not current
+    if isinstance(current, float):
+        return current + 1.0
+    if isinstance(current, int) and not isinstance(current, bool):
+        return current + 1
+    if isinstance(current, str):
+        return f"{current}-{uuid.uuid4().hex[:4]}"
+    text = str(current)
+    if text in ("active", "inactive"):
+        return "inactive" if text == "active" else "active"
+    if text in ("operational", "operational-read-only"):
+        return "operational-read-only" if text == "operational" else "operational"
+    return None
+
+
+def wp_request(
+    ctx: TestContext,
+    objid: ObjectIdentifier,
+    prop: str,
+    value: Any,
+    index: Optional[int] = None,
+    priority: Optional[int] = None,
+    *,
+    cast: bool = True,
+) -> WritePropertyRequest:
+    request = WritePropertyRequest(
+        objectIdentifier=objid,
+        propertyIdentifier=PropertyIdentifier(prop),
+        propertyValue=cast_property(ctx, objid, prop, value, index) if cast else value,
+        destination=ctx.iut.address,
+    )
+    if index is not None:
+        request.propertyArrayIndex = index
+    if priority is not None:
+        request.priority = priority
+    return request
+
+
+def _property_value(
+    ctx: TestContext,
+    objid: ObjectIdentifier,
+    prop: str,
+    value: Any,
+    index: Optional[int],
+    priority: Optional[int],
+    cast: bool,
+) -> PropertyValue:
+    item = PropertyValue(
+        propertyIdentifier=PropertyIdentifier(prop),
+        value=cast_property(ctx, objid, prop, value, index) if cast else value,
+    )
+    if index is not None:
+        item.propertyArrayIndex = index
+    if priority is not None:
+        item.priority = priority
+    return item
+
+
+def wpm_request(
+    ctx: TestContext,
+    groups: Sequence[Tuple[ObjectIdentifier, Sequence[Tuple]]],
+) -> WritePropertyMultipleRequest:
+    """groups are (object, [(prop, value, index, priority, cast), ...]). cast defaults to True."""
+    specs = []
+    for objid, props in groups:
+        items = []
+        for spec in props:
+            prop, value = spec[0], spec[1]
+            index = spec[2] if len(spec) > 2 else None
+            priority = spec[3] if len(spec) > 3 else None
+            cast = spec[4] if len(spec) > 4 else True
+            items.append(_property_value(ctx, objid, prop, value, index, priority, cast))
+        specs.append(
+            WriteAccessSpecification(
+                objectIdentifier=objid,
+                listOfProperties=SequenceOf(PropertyValue)(items),
+            )
+        )
+    return WritePropertyMultipleRequest(
+        listOfWriteAccessSpecs=SequenceOf(WriteAccessSpecification)(specs),
+        destination=ctx.iut.address,
+    )
+
+
+async def restore(ctx: TestContext, change: Written) -> None:
+    """Put a property back. A failed restore is recorded; it is not part of the 135.1 procedure."""
+    try:
+        await ctx.app.write_property(
+            ctx.iut.address,
+            change.objid,
+            change.prop,
+            change.previous,
+            change.array_index,
+            change.priority,
+        )
+    except ErrorRejectAbortNack as err:
+        ctx.defect(
+            f"Could not restore {change.objid} {change.prop}",
+            expected=change.previous,
+            actual=format_pdu(err),
+        )
+
+
+async def expect_simple_ack(ctx: TestContext, request: Any) -> bool:
+    ack = await ctx.expect_ack(request, SimpleAckPDU)
+    return ack is not None
+
+
+def read_only_property(ctx: TestContext) -> Tuple[ObjectIdentifier, str, Any]:
+    """A present property whose conformance code is not W. Raises SkipTest when none is known."""
+    for objid in ctx.test_objects():
+        spec = object_spec(str(objid[0]))
+        if spec is None:
+            continue
+        for prop in spec.properties:
+            if prop.writable is not False or prop.commandable:
+                continue
+            return objid, prop.name, None
+    raise SkipTest("no read-only standard property is known for the IUT's object types")
+
+
+def ranged_property(ctx: TestContext):
+    """(objid, property name, minimum, maximum) for a writable property with a numeric range."""
+    for objid in ctx.test_objects():
+        spec = object_spec(str(objid[0]))
+        if spec is None:
+            continue
+        for prop in spec.properties:
+            if not prop.writable:
+                continue
+            if prop.minimum is None and prop.maximum is None:
+                continue
+            return objid, prop.name, prop.minimum, prop.maximum
+    return None

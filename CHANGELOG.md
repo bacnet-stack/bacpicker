@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 9.20 ReadPropertyMultiple Service Execution Tests.
   - 9.32 Who-Has Service Execution Tests.
   - 9.33 Who-Is Service Execution Tests.
+  - Remaining clause 9 application service execution tests for the services BACpypes3
+    can encode, other than VT and the removed RequestKey and Authenticate services.
+    Procedures that need an alarm, a subscription from the IUT, a vendor password, a
+    known file image, or a reboot are registered and reported as not automated.
 - Procedures that cannot be automated are registered and reported as SKIP with the reason.
 - EPICS generation from the IUT (`--generate-epics`) and EPICS parsing (`--epics`).
 - Reporters: console, JSON, JUnit XML, Markdown, HTML and EPICS.

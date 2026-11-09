@@ -11,7 +11,15 @@ import logging
 import re
 from typing import Any, Callable, List, Optional, Tuple
 
-from bacpypes3.apdu import APDU, ErrorRejectAbortNack, IAmRequest, ReadPropertyRequest
+from bacpypes3.apdu import (
+    APDU,
+    ConfirmedCOVNotificationRequest,
+    ConfirmedEventNotificationRequest,
+    ErrorRejectAbortNack,
+    IAmRequest,
+    ReadPropertyRequest,
+    SimpleAckPDU,
+)
 from bacpypes3.app import Application
 from bacpypes3.ipv4 import IPv4DatagramProtocol
 from bacpypes3.ipv4.link import NormalLinkLayer
@@ -91,6 +99,14 @@ class TesterApplication(Application):
             except Exception:
                 log.exception("listener failed")
         await super().indication(apdu)
+
+    async def do_ConfirmedCOVNotificationRequest(self, apdu: ConfirmedCOVNotificationRequest) -> None:
+        """135.1 SubscribeCOV tests: the TD acknowledges confirmed COV notifications."""
+        await self.response(SimpleAckPDU(context=apdu))
+
+    async def do_ConfirmedEventNotificationRequest(self, apdu: ConfirmedEventNotificationRequest) -> None:
+        """135.1 event tests: the TD acknowledges confirmed event notifications."""
+        await self.response(SimpleAckPDU(context=apdu))
 
 
 def build_application(config: RunConfig) -> TesterApplication:
