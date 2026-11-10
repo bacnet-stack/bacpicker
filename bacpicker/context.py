@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, List, NoReturn, Optional, Set, Tuple
 
 from bacpypes3.apdu import APDU, ErrorRejectAbortNack
 from bacpypes3.basetypes import PropertyIdentifier
-from bacpypes3.constructeddata import Array
+from bacpypes3.constructeddata import Array, ArrayOf
 from bacpypes3.pdu import Address, GlobalBroadcast, LocalBroadcast
 from bacpypes3.primitivedata import (
     BitString,
@@ -45,6 +45,13 @@ COMMON_PROPERTY_TYPES = {
     "object-identifier": ObjectIdentifier,
     "object-name": CharacterString,
     "object-type": ObjectType,
+}
+
+# datatypes for decoding common properties when the object type is proprietary; Property_List is
+# not in COMMON_PROPERTY_TYPES because it is not required of every object (before revision 14)
+FALLBACK_PROPERTY_TYPES = {
+    **COMMON_PROPERTY_TYPES,
+    "property-list": ArrayOf(PropertyIdentifier),
 }
 
 
@@ -252,7 +259,7 @@ class TestContext(AssertionsMixin):
     def property_type(self, objid: ObjectIdentifier, prop: str) -> Any:
         object_class = self.object_class(objid)
         ptype = object_class.get_property_type(PropertyIdentifier(prop)) if object_class else None
-        return ptype or COMMON_PROPERTY_TYPES.get(prop)
+        return ptype or FALLBACK_PROPERTY_TYPES.get(prop)
 
     def model_properties(self, objid: ObjectIdentifier) -> Set[str]:
         """Standard properties defined for this object type (ASHRAE CSML, else bacpypes3)."""
