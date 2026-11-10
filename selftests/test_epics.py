@@ -3,11 +3,12 @@
 
 from __future__ import annotations
 
+from bacpypes3.primitivedata import ObjectIdentifier
 from test_end_to_end import run_suite
 from test_framework import make_profile
 
 from bacpicker.config import RunConfig
-from bacpicker.database import TestDatabase, read_database
+from bacpicker.database import ObjectRecord, TestDatabase, read_database
 from bacpicker.epics import parse_epics, write_epics
 from bacpicker.iut import build_application, build_profile, discover_iut
 from bacpicker.registry import get_test
@@ -88,6 +89,28 @@ def test_ds_rp_b_stays_uncommented_when_read_property_is_not_inferred(tmp_path):
     assert "DS-RP-B            -- required of all BACnet devices" in text
     assert "DM-DDB-B           -- executes Who-Is" in text
     assert parse_epics(path).bibbs == ["DM-DDB-B", "DS-RP-B"]
+
+
+def test_internal_bibb_preferred_over_external_variant(tmp_path):
+    path = tmp_path / "write-group.tpi"
+    database = TestDatabase()
+    objid = ObjectIdentifier("channel,1")
+    database.objects[objid] = ObjectRecord(objid=objid, object_type="channel", source="rpm-all")
+    write_epics(path, make_profile(services_supported={"write-group"}), database, RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert "-- DS-WG-E-B" in lines
+    assert any(line.startswith("DS-WG-I-B ") for line in lines)
+    assert "DS-WG-E-B" not in parse_epics(path).bibbs
+
+
+def test_you_are_implies_who_am_i_initiate_and_who_is_execute(tmp_path):
+    path = tmp_path / "you-are.tpi"
+    write_epics(path, make_profile(services_supported={"you-are"}), TestDatabase(), RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert "Who-Am-I Initiate" in lines
+    assert "Who-Is Execute" in lines
+    assert "You-Are Execute" in lines
+    assert parse_epics(path).services["who-am-i"] == {"initiate"}
 
 
 async def test_missing_read_property_fails_clause_5e(tmp_path):
