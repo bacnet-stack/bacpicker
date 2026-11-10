@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `--list-devices` sends a global Who-Is using the configured local address and BBMD,
+  lists the responding devices, and exits without running tests.
 - BACnet/IP conformance test tool based on ANSI/ASHRAE 135.1-2023, built on BACpypes3.
 - IUT discovery with Who-Is (broadcast, unicast, or as a foreign device via a BBMD)
   and capability profiling from the Device object.

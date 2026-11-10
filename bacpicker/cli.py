@@ -12,6 +12,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from bacpypes3.pdu import GlobalBroadcast
+
 from . import STANDARD_EDITION, __version__
 from .config import RunConfig
 from .database import read_database
@@ -65,6 +67,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     run.add_argument("--max-objects", type=int, default=50,
                      help="max objects visited by tests that walk the Object_List")
     run.add_argument("--list-tests", action="store_true", help="list registered tests and exit")
+    run.add_argument("--list-devices", action="store_true",
+                     help="send a global Who-Is, list discovered devices, and exit")
 
     out = p.add_argument_group("reporting")
     out.add_argument("-r", "--report", action="append", choices=FORMATS + ("epics",), metavar="FORMAT",
@@ -129,6 +133,26 @@ def list_tests(config: RunConfig) -> None:
         print(f"{test.clause:<12} {test.title}{extra}")
 
 
+async def list_devices(config: RunConfig) -> int:
+    app = build_application(config)
+    try:
+        await app.listen_for_broadcasts()
+        timeout = max(1, int(round(config.unconfirmed_response_fail_time)))
+        i_ams = await app.who_is(address=GlobalBroadcast(), timeout=timeout)
+        if not i_ams:
+            print("No devices discovered.")
+            return 0
+        print(f"{'Instance':<10} {'Address':<24} {'Vendor ID':<10} {'Max APDU':<10} Segmentation")
+        for i_am in sorted(i_ams, key=lambda i: (i.iAmDeviceIdentifier[1], str(i.pduSource))):
+            print(
+                f"{i_am.iAmDeviceIdentifier[1]:<10} {str(i_am.pduSource):<24} "
+                f"{i_am.vendorID:<10} {i_am.maxAPDULengthAccepted:<10} {i_am.segmentationSupported}"
+            )
+        return 0
+    finally:
+        app.close()
+
+
 async def run(config: RunConfig, epics: Optional[Epics] = None, generate: Optional[Path] = None) -> int:
     reporters = make_reporters(
         [f for f in config.report_formats if f != "epics"], config.output_dir, config.verbose
@@ -183,6 +207,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         list_tests(config)
         return 0
     try:
+        if args.list_devices:
+            return asyncio.run(list_devices(config))
         return asyncio.run(run(config, epics, args.generate_epics))
     except KeyboardInterrupt:
         return 130
