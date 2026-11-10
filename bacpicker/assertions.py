@@ -58,6 +58,15 @@ def _brief(value: Any, limit: int = 200) -> str:
     return text if len(text) <= limit else text[: limit - 3] + "..."
 
 
+def error_class_code(err: Any) -> Tuple[Any, Any]:
+    """Error class and code from an Error PDU, including the nested errorType of
+    ChangeListError, CreateObjectError and WritePropertyMultipleError."""
+    nested = getattr(err, "errorType", None)
+    if nested is not None and getattr(nested, "errorClass", None) is not None:
+        return nested.errorClass, nested.errorCode
+    return err.errorClass, err.errorCode
+
+
 class AssertionsMixin:
     """Mixed into TestContext; relies on its send() and defect() methods."""
 
@@ -130,7 +139,7 @@ class AssertionsMixin:
         try:
             ack = await self.send(request)  # type: ignore[attr-defined]
         except ErrorPDU as err:
-            ok = (err.errorClass, err.errorCode) in expected_pairs
+            ok = error_class_code(err) in expected_pairs
             return self.check(
                 ok,
                 "Wrong error class or error code returned",
@@ -152,6 +161,39 @@ class AssertionsMixin:
             False,
             "Expected an Error PDU but the request was acknowledged",
             expected=expected_text,
+            actual=format_pdu(ack),
+            request=request,
+            response=ack,
+        )
+
+    async def expect_reject(self, request: APDU, *reasons: str) -> bool:
+        """Send a confirmed request; record a defect unless a Reject PDU with one of the reasons arrives."""
+        expected = " | ".join(f"Reject: {reason}" for reason in reasons)
+        try:
+            ack = await self.send(request)  # type: ignore[attr-defined]
+        except RejectPDU as err:
+            actual = str(err.apduAbortRejectReason)
+            return self.check(
+                actual in reasons,
+                "Wrong reject reason",
+                expected=expected,
+                actual=format_pdu(err),
+                request=request,
+                response=err,
+            )
+        except ErrorRejectAbortNack as err:
+            return self.check(
+                False,
+                "Expected a Reject PDU",
+                expected=expected,
+                actual=format_pdu(err),
+                request=request,
+                response=err,
+            )
+        return self.check(
+            False,
+            "Expected a Reject PDU but the request was acknowledged",
+            expected=expected,
             actual=format_pdu(ack),
             request=request,
             response=ack,

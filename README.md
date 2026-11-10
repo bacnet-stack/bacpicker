@@ -14,14 +14,47 @@ and actual values, and the request/response that exposed it.
 | 135.1 clause | Tests |
 |---|---|
 | 5 EPICS Consistency Tests | 5(a)–5(r) |
+| 9.1 AcknowledgeAlarm Service Execution Tests | 9.1.1.1–9.1.1.15, 9.1.2.1, 9.1.2.3–9.1.2.7 |
+| 9.2 ConfirmedCOVNotification Service Execution Tests | 9.2.1.1–9.2.1.7, 9.2.2.1–9.2.2.4 |
+| 9.3 UnconfirmedCOVNotification Service Execution Tests | 9.3.1, 9.3.2.1–9.3.2.7 |
+| 9.4 ConfirmedEventNotification Service Execution Tests | 9.4.1–9.4.3, 9.4.5–9.4.8 |
+| 9.5 UnconfirmedEventNotification Service Execution Tests | 9.5.1–9.5.4 |
+| 9.6 GetAlarmSummary Service Execution Tests | 9.6.1–9.6.3 |
+| 9.7 GetEnrollmentSummary Service Execution Tests | 9.7.1.1–9.7.1.4, 9.7.2.1–9.7.2.6 |
+| 9.8 GetEventInformation Service Execution Tests | 9.8.1–9.8.6 |
+| 9.9 LifeSafetyOperation Service Execution Tests | 9.9.1.1–9.9.1.3, 9.9.2.1–9.9.2.3 |
+| 9.10 SubscribeCOV Service Execution Tests | 9.10.1.1–9.10.1.11, 9.10.2.1–9.10.2.4, 9.10.3.1 |
+| 9.11 SubscribeCOVProperty Service Execution Tests | 9.11.1.1–9.11.1.14, 9.11.2.1–9.11.2.6 |
+| 9.12 AtomicReadFile Service Execution Tests | 9.12.1.1–9.12.1.2, 9.12.2.1–9.12.2.2 |
+| 9.13 AtomicWriteFile Service Execution Tests | 9.13.1.1–9.13.1.2, 9.13.2.1–9.13.2.2 |
+| 9.14 AddListElement Service Execution Tests | 9.14.1.1–9.14.1.3, 9.14.2.1–9.14.2.3 |
+| 9.15 RemoveListElement Service Execution Tests | 9.15.1.1–9.15.1.2, 9.15.2.1–9.15.2.2 |
+| 9.16 CreateObject Service Execution Tests | 9.16.1.1–9.16.1.4, 9.16.2.1–9.16.2.5, 9.16.2.7–9.16.2.8 |
+| 9.17 DeleteObject Service Execution Tests | 9.17.1.1, 9.17.2.1–9.17.2.2 |
 | 9.18 ReadProperty Service Execution Tests | 9.18.1.1–9.18.1.9, 9.18.2.1–9.18.2.4 |
 | 9.20 ReadPropertyMultiple Service Execution Tests | 9.20.1.1–9.20.1.15, 9.20.2.1–9.20.2.3 |
+| 9.21 ReadRange Service Execution Tests | 9.21.1.1–9.21.1.4, 9.21.1.6–9.21.1.10, 9.21.1.12–9.21.1.15, 9.21.2.1–9.21.2.4 |
+| 9.22 WriteProperty Service Execution Tests | 9.22.1.1–9.22.1.5, 9.22.2.1–9.22.2.11 |
+| 9.23 WritePropertyMultiple Service Execution Tests | 9.23.1.1–9.23.1.9, 9.23.2.1–9.23.2.22 |
+| 9.24 DeviceCommunicationControl Service Execution Tests | 9.24.1.1–9.24.1.12, 9.24.2.1–9.24.2.3 |
+| 9.25 ConfirmedPrivateTransfer Service Execution Tests | 9.25.1.1, 9.25.2.1 |
+| 9.27 ReinitializeDevice Service Execution Tests | 9.27.1.1–9.27.1.4, 9.27.2.3–9.27.2.5 |
+| 9.28 ConfirmedTextMessage Service Execution Tests | 9.28.1–9.28.4 |
+| 9.29 UnconfirmedTextMessage Service Execution Tests | 9.29.1–9.29.3 |
+| 9.30 TimeSynchronization Service Execution Tests | 9.30.1.1–9.30.1.2 |
+| 9.31 UTCTimeSynchronization Service Execution Tests | 9.31.1.1–9.31.1.2 |
 | 9.32 Who-Has Service Execution Tests | 9.32.1.1–9.32.1.13, 9.32.2.1–9.32.2.4 |
 | 9.33 Who-Is Service Execution Tests | 9.33.1.1–9.33.1.6, 9.33.2.1–9.33.2.3 |
+| 9.39 General Testing of Service Execution | 9.39.1–9.39.2 |
+| 9.41 WriteGroup Tests | 9.41.1.1–9.41.1.4 |
 
 Test titles and step numbers follow the 135.1 procedures. Procedures that cannot be
 automated (for example requests originating from a simulated remote network) are listed
 and reported as SKIP with the reason, so reports show complete clause coverage.
+Deleted clauses are not registered. VT-Open, VT-Close and VT-Data, and the removed
+security services RequestKey and Authenticate, are not included. ReadPropertyConditional,
+AuditLogQuery and SubscribeCOVPropertyMultiple are not included because BACpypes3 has
+no APDU for them. UnconfirmedPrivateTransfer has no procedure in 135.1.
 
 Tests are selected automatically: a test is skipped when the IUT's
 Protocol_Services_Supported lacks a required service, when its Protocol_Revision is below
