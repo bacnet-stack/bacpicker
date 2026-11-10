@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from bacpypes3.primitivedata import ObjectIdentifier
+from bacpypes3.local.object import Object as LocalObject
+from bacpypes3.primitivedata import CharacterString, ObjectIdentifier, ObjectType
 from test_end_to_end import run_suite
 from test_framework import make_profile
 
@@ -142,6 +143,31 @@ async def test_bibb_consistency(loopback_config, tmp_path):
     }, report.results
     messages = [d.message for r in report.results for d in r.defects]
     assert any("SCHED-I-B" in m for m in messages)
+
+
+class ProprietaryObject(LocalObject):
+    """Not registered with any VendorInfo, so the tester has no class for its type."""
+
+    objectType = ObjectType(861)
+    # bacpypes3's local Object._post_init reads notificationClass
+    notificationClass = None
+    _elements = {
+        "objectIdentifier": ObjectIdentifier,
+        "objectName": CharacterString,
+        "objectType": ObjectType,
+    }
+
+
+async def test_proprietary_object_matches_object_list(simulated_iut, loopback_config, tmp_path):
+    app, _address = simulated_iut
+    app.add_object(ProprietaryObject(objectIdentifier=(861, 1), objectName="Vendor Thing"))
+    path = tmp_path / "iut.tpi"
+    await generate(loopback_config, path)
+    epics = parse_epics(path)
+    assert "(proprietary 861, 1)" in {o.object_identifier for o in epics.objects}
+    _profile, report = await run_suite(loopback_config, include=["5(h)"], epics=epics)
+    (result,) = report.results
+    assert result.status is Status.PASS, [d.message for d in result.defects]
 
 
 async def test_restriction_outside_standard_range(loopback_config, tmp_path):

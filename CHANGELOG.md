@@ -55,5 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTML report showed each test step number twice.
 - On Windows, listening for broadcasts on port 47808 failed with "reuse_port not
   supported by socket module".
+- The test database now decodes Object_Identifier, Object_Name and Object_Type of
+  proprietary objects whose types the tester has no class for, so the generated EPICS
+  lists them as `(proprietary N, i)` and clause 5(h) no longer reports them as missing.
 
 [Unreleased]: https://github.com/bacnet-stack/bacpicker/commits/default

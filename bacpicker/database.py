@@ -25,7 +25,7 @@ from bacpypes3.constructeddata import SequenceOf
 from bacpypes3.primitivedata import ObjectIdentifier, TagList
 from bacpypes3.vendor import get_vendor_info
 
-from .context import DeviceProfile, value_tags
+from .context import COMMON_PROPERTY_TYPES, DeviceProfile, value_tags
 from .standard import canonical_object_type, object_spec, property_identifiers
 
 log = logging.getLogger(__name__)
@@ -104,6 +104,8 @@ def decode(vendor_id: int, objid: ObjectIdentifier, prop: str, value: Any) -> An
         ptype = object_class.get_property_type(PropertyIdentifier(prop)) if object_class else None
     except Exception:
         ptype = None
+    # proprietary object types usually have no registered class, but their common properties are standard
+    ptype = ptype or COMMON_PROPERTY_TYPES.get(prop)
     if ptype is None:
         return None
     try:

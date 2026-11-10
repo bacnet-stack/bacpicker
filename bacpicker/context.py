@@ -41,7 +41,7 @@ from .result import Defect, TestResult
 from .standard import normalize, object_spec
 
 # properties every object has, used when the object type is proprietary
-_COMMON_PROPERTY_TYPES = {
+COMMON_PROPERTY_TYPES = {
     "object-identifier": ObjectIdentifier,
     "object-name": CharacterString,
     "object-type": ObjectType,
@@ -252,7 +252,7 @@ class TestContext(AssertionsMixin):
     def property_type(self, objid: ObjectIdentifier, prop: str) -> Any:
         object_class = self.object_class(objid)
         ptype = object_class.get_property_type(PropertyIdentifier(prop)) if object_class else None
-        return ptype or _COMMON_PROPERTY_TYPES.get(prop)
+        return ptype or COMMON_PROPERTY_TYPES.get(prop)
 
     def model_properties(self, objid: ObjectIdentifier) -> Set[str]:
         """Standard properties defined for this object type (ASHRAE CSML, else bacpypes3)."""
@@ -260,7 +260,7 @@ class TestContext(AssertionsMixin):
         if spec is not None:
             return spec.names
         object_class = self.object_class(objid)
-        names = set(_COMMON_PROPERTY_TYPES)
+        names = set(COMMON_PROPERTY_TYPES)
         for cls in getattr(object_class, "__mro__", ()):
             names |= {_prop_name(p) for p in getattr(cls, "_elements", {}) or {}}
         return names
@@ -271,7 +271,7 @@ class TestContext(AssertionsMixin):
         if spec is not None:
             return spec.required(self.iut.protocol_revision)
         object_class = self.object_class(objid)
-        names = set(_COMMON_PROPERTY_TYPES)
+        names = set(COMMON_PROPERTY_TYPES)
         for cls in getattr(object_class, "__mro__", ()):
             names |= {_prop_name(p) for p in cls.__dict__.get("_required", ())}
         return names
