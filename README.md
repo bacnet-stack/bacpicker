@@ -86,6 +86,21 @@ List the registered tests:
 bacpicker --list-tests
 ```
 
+Discover devices with a global Who-Is and exit (without running tests):
+
+```sh
+bacpicker --list-devices
+bacpicker --list-devices -a 192.168.1.10/24
+bacpicker --list-devices -a 192.168.1.10/24 --bbmd 192.168.2.1
+```
+
+The list shows each device's instance, address, vendor ID, maximum APDU length and
+segmentation support from its I-Am response, sorted by instance and address.
+Discovery honors the network settings and waits for `--unconfirmed-response-fail-time`
+(default 3 seconds, rounded to whole seconds with a minimum of 1). IUT selection
+(`--device-instance`, `--target`, `--unicast`) does not restrict this global search.
+An empty search prints "No devices discovered." and exits successfully.
+
 Run all applicable tests against device instance 1234:
 
 ```sh
@@ -111,6 +126,7 @@ Options:
 | `--timeout` | Per-test timeout in seconds (default 120) |
 | `--max-objects` | Maximum objects visited by tests that walk the Object_List (default 50) |
 | `--list-tests` | List the registered tests and exit |
+| `--list-devices` | Send a global Who-Is, list discovered devices, and exit |
 | `-r, --report` | `console`, `json`, `junit`, `markdown`, `html`, `epics` (repeatable; default `console`) |
 | `-o, --output-dir` | Directory for report files (default `reports`): `report.json`, `report.junit.xml`, `report.md`, `report.html`, `report.epics` |
 | `-v, --verbose` / `--debug` | Show test steps / log protocol traffic |
