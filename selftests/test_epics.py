@@ -184,14 +184,28 @@ async def test_proprietary_object_property_list_is_decoded(simulated_iut, loopba
     )
     _profile, report = await run_suite(loopback_config, include=["5(n)"])
     (result,) = report.results
+    # FAIL is expected: the fixture's generated Property_List lists excluded properties
+    assert result.status in (Status.PASS, Status.FAIL), (result.status, result.reason)
     messages = [d.message for d in result.defects]
     assert not any("861" in m and "Property_List is missing" in m for m in messages), messages
 
 
-class ConformingPropertyListObject(ProprietaryObject):
-    """Its Property_List excludes the identity properties and itself, as 135 requires."""
+class ConformingPropertyListObject(LocalObject):
+    """Its Property_List excludes the identity properties and itself, as 135 requires.
 
-    _elements = {**ProprietaryObject._elements, "description": CharacterString}
+    Derived from LocalObject, not ProprietaryObject: bacpypes3 registers a subclass of a class
+    in this module under the simulator's vendor, which would give the tester a class for 861.
+    """
+
+    objectType = ObjectType(861)
+    notificationClass = None
+    _elements = {
+        "objectIdentifier": ObjectIdentifier,
+        "objectName": CharacterString,
+        "objectType": ObjectType,
+        "description": CharacterString,
+        "propertyList": ArrayOf(PropertyIdentifier),
+    }
 
     @property
     def propertyList(self):  # type: ignore[override]
