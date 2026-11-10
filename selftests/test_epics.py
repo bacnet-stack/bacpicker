@@ -11,7 +11,7 @@ from test_end_to_end import run_suite
 from test_framework import make_profile
 
 from bacpicker.config import RunConfig
-from bacpicker.database import ObjectRecord, TestDatabase, read_database
+from bacpicker.database import ObjectRecord, TestDatabase, read_database, read_object
 from bacpicker.epics import parse_epics, write_epics
 from bacpicker.iut import build_application, build_profile, discover_iut
 from bacpicker.registry import get_test
@@ -186,6 +186,40 @@ async def test_proprietary_object_property_list_is_decoded(simulated_iut, loopba
     (result,) = report.results
     messages = [d.message for d in result.defects]
     assert not any("861" in m and "Property_List is missing" in m for m in messages), messages
+
+
+class ConformingPropertyListObject(ProprietaryObject):
+    """Its Property_List excludes the identity properties and itself, as 135 requires."""
+
+    _elements = {**ProprietaryObject._elements, "description": CharacterString}
+
+    @property
+    def propertyList(self):  # type: ignore[override]
+        return ArrayOf(PropertyIdentifier)([PropertyIdentifier("description")])
+
+    @propertyList.setter
+    def propertyList(self, value):
+        pass
+
+
+async def test_property_list_kept_without_read_property_multiple(simulated_iut, loopback_config):
+    app, _address = simulated_iut
+    app.add_object(
+        ConformingPropertyListObject(
+            objectIdentifier=(861, 1), objectName="Vendor Thing", description="thing"
+        )
+    )
+    tester = build_application(loopback_config)
+    try:
+        address, i_am = await discover_iut(tester, loopback_config)
+        profile = await build_profile(tester, address, i_am)
+        profile.services_supported.discard("read-property-multiple")
+        record = await read_object(tester, profile, ObjectIdentifier((861, 1)))
+    finally:
+        tester.close()
+    assert record.source == "property-list"
+    assert record.property_list == ["description"]
+    assert "property-list" in record.properties
 
 
 async def test_restriction_outside_standard_range(loopback_config, tmp_path):

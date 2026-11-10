@@ -217,6 +217,9 @@ async def read_object(app: Any, profile: DeviceProfile, objid: ObjectIdentifier)
             if record.source == "standard-list" and not rec.present:
                 continue
             records[name] = rec
+        if record.source == "property-list":
+            # a conforming Property_List does not list itself, so keep the one already read
+            records.setdefault("property-list", plist)
 
     record.properties = records
     if "property-list" in records and records["property-list"].value is not None:
