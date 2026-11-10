@@ -135,6 +135,10 @@ def _suggested_bibbs(profile: Any, database: Any) -> Dict[str, str]:
             suggestions[acronym] = "executes " + ", ".join(service_epics_name(s) for s in bibb.execute)
         else:
             suggestions[acronym] = "required object types present"
+    # Where an external (-E-B) and internal (-I-B) variant both match, assume internal only.
+    for acronym in [a for a in suggestions if a.endswith("-E-B")]:
+        if acronym[:-4] + "-I-B" in suggestions:
+            del suggestions[acronym]
     return suggestions
 
 
@@ -181,12 +185,17 @@ def write_epics(path: Path, profile: Any, database: Any, config: Any) -> None:
         "BACnet Standard Application Services Supported:",
         "{",
         "-- Execute is from Protocol_Services_Supported; add Initiate where supported.",
+        "-- I-Am, I-Have (with Who-Has) and Who-Am-I (with You-Are) Initiate are inferred.",
     ]
     initiated = {"i-am"} | ({"i-have"} if profile.supports_service("who-has") else set())
-    for service in sorted(profile.services_supported | initiated, key=service_epics_name):
-        roles = (["Initiate"] if service in initiated else []) + (
-            ["Execute"] if service in profile.services_supported and service not in initiated else []
-        )
+    executed = set(profile.services_supported) - initiated
+    # A device that executes You-Are is one whose identity is assigned by another device:
+    # it asks with Who-Am-I and, to be discoverable, answers Who-Is.
+    if profile.supports_service("you-are"):
+        initiated.add("who-am-i")
+        executed.add("who-is")
+    for service in sorted(initiated | executed, key=service_epics_name):
+        roles = (["Initiate"] if service in initiated else []) + (["Execute"] if service in executed else [])
         lines.append(f"{service_epics_name(service)} {' '.join(roles)}")
     lines += ["}", "", "Standard Object Types Supported:", "{"]
     types = set(profile.object_types_supported) | {r.object_type for r in database.objects.values()}
