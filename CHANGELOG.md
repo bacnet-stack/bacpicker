@@ -43,6 +43,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `--generate-epics` infers the Initiate services Annex K requires of each suggested
+  BIBB, because Protocol_Services_Supported has only execute bits. A device that
+  executes SubscribeCOV is listed as initiating ConfirmedCOVNotification and
+  UnconfirmedCOVNotification. Device `time-synchronization-interval` and
+  `time-synchronization-recipients` together list TimeSynchronization and
+  UTCTimeSynchronization Initiate, and leave DM-ATS-A, DM-TS-A and DM-UTC-A commented
+  as a possible inclusion. `restart-notification-recipients` uncomments DM-R-B, and a
+  Notification Class object uncomments AE-N-I-B.
 - `--generate-epics` lists every Annex K BIBB the device appears to support uncommented,
   with the reason it was included. DS-RP-B stays uncommented even when ReadProperty
   cannot be inferred, because every device must support it. The remaining BIBBs stay
@@ -52,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Clause 5(d) accepts a BIBB Initiate role that the device evidence implies when the
+  EPICS omits it, and notes that inference. DS-COV-B no longer fails for
+  ConfirmedCOVNotification Initiate solely because the execute bit string cannot say
+  Initiate.
 - HTML report showed each test step number twice.
 - On Windows, listening for broadcasts on port 47808 failed with "reuse_port not
   supported by socket module".

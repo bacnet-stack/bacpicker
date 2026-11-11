@@ -6,6 +6,8 @@
 The "test database" is read from the IUT (as the bacnet-stack bacepics tool does), so these
 checks compare the standard against live data. Sections that cannot be read from a device
 (BIBBs, Initiate support, W/C markings, restrictions) come from the EPICS given with --epics.
+5(d) also accepts an Initiate or Execute role that the device evidence implies, and notes
+that inference, because Protocol_Services_Supported has no Initiate bits.
 """
 
 from __future__ import annotations
@@ -14,6 +16,7 @@ import re
 from typing import Dict, Optional, Set, Tuple
 
 from ..context import TestContext
+from ..epics import inferred_roles
 from ..registry import conformance_test
 from ..standard import (
     bibbs,
@@ -107,12 +110,20 @@ async def epics_c(ctx: TestContext) -> None:
 
 @conformance_test("5(d)", "BIBB-required services are in Application Services Supported")
 async def epics_d(ctx: TestContext) -> None:
-    for bibb in _declared_bibbs(ctx):
+    declared = _declared_bibbs(ctx)
+    # Protocol_Services_Supported has no Initiate bits. A role the device evidence
+    # implies satisfies the BIBB even when the EPICS line was left out.
+    inferred = inferred_roles(ctx.iut, await ctx.test_database())
+    for bibb in declared:
         for role, services in (("initiate", bibb.initiate), ("execute", bibb.execute)):
             for service in services:
                 ctx.step(f"{bibb.acronym} ({bibb.clause}): {service_epics_name(service)} {role.capitalize()}")
+                listed = role in ctx.epics.services.get(service, set())
+                reason = inferred.get((service, role))
+                if not listed and reason:
+                    ctx.note(f"inferred: {reason}")
                 ctx.check(
-                    role in ctx.epics.services.get(service, set()),
+                    listed or bool(reason),
                     f"{bibb.acronym} requires {service_epics_name(service)} {role.capitalize()}",
                     expected=f"{service_epics_name(service)} {role.capitalize()}",
                     actual=" ".join(sorted(ctx.epics.services.get(service, set()))) or "not listed",
