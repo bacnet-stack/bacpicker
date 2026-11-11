@@ -210,34 +210,66 @@ async def test_clause_5d_infers_vt_initiate(tmp_path):
     assert any("DM-VT-B" in step for step in result.steps)
 
 
+def _possible(acronym, evidence):
+    return f"-- {acronym:<16}-- possible inclusion: {evidence}"
+
+
 def test_time_sync_properties_are_a_possible_inclusion(tmp_path):
-    path = tmp_path / "time.tpi"
     profile = make_profile(services_supported={"read-property", "time-synchronization"})
-    database = TestDatabase()
+
+    local = tmp_path / "local.tpi"
+    local_db = TestDatabase()
+    _device(local_db, profile, **{"time-synchronization-recipients": []})
+    write_epics(local, profile, local_db, RunConfig())
+    local_text = local.read_text(encoding="utf-8")
+    assert _possible("DM-TS-A", "time-synchronization-recipients") in local_text
+    assert "TimeSynchronization Initiate Execute" in local_text
+    assert "UTCTimeSynchronization" not in local_text
+    assert "-- DM-UTC-A" in local_text.splitlines()
+    assert "-- DM-ATS-A" in local_text.splitlines()
+
+    utc = tmp_path / "utc.tpi"
+    utc_db = TestDatabase()
+    _device(utc_db, profile, **{"utc-time-synchronization-recipients": []})
+    write_epics(utc, profile, utc_db, RunConfig())
+    utc_lines = utc.read_text(encoding="utf-8").splitlines()
+    assert _possible("DM-UTC-A", "utc-time-synchronization-recipients") in "\n".join(utc_lines)
+    assert "UTCTimeSynchronization Initiate" in utc_lines
+    assert "TimeSynchronization Execute" in utc_lines
+    assert "TimeSynchronization Initiate Execute" not in utc_lines
+    assert "-- DM-TS-A" in utc_lines
+    assert "-- DM-ATS-A" in utc_lines
+
+    both = tmp_path / "both.tpi"
+    both_db = TestDatabase()
     _device(
-        database,
+        both_db,
         profile,
-        **{"time-synchronization-interval": 0, "time-synchronization-recipients": []},
+        **{
+            "time-synchronization-interval": 0,
+            "time-synchronization-recipients": [],
+            "utc-time-synchronization-recipients": [],
+        },
     )
-    write_epics(path, profile, database, RunConfig())
-    text = path.read_text(encoding="utf-8")
-    note = "possible inclusion: time-synchronization-interval and time-synchronization-recipients"
-    for acronym in ("DM-ATS-A", "DM-TS-A", "DM-UTC-A"):
-        assert f"-- {acronym:<16}-- {note}" in text
-    assert "TimeSynchronization Initiate Execute" in text
-    assert "UTCTimeSynchronization Initiate" in text
-    claimed = parse_epics(path).bibbs
+    write_epics(both, profile, both_db, RunConfig())
+    both_text = both.read_text(encoding="utf-8")
+    assert _possible("DM-TS-A", "time-synchronization-recipients") in both_text
+    assert _possible("DM-UTC-A", "utc-time-synchronization-recipients") in both_text
+    assert _possible("DM-ATS-A", "time-synchronization-interval and both recipient lists") in both_text
+    assert "TimeSynchronization Initiate Execute" in both_text
+    assert "UTCTimeSynchronization Initiate" in both_text
+    claimed = parse_epics(both).bibbs
     assert "DM-ATS-A" not in claimed and "DM-TS-A" not in claimed and "DM-UTC-A" not in claimed
 
-    one = tmp_path / "one.tpi"
-    only_interval = TestDatabase()
-    _device(only_interval, profile, **{"time-synchronization-interval": 30})
-    write_epics(one, profile, only_interval, RunConfig())
-    one_lines = one.read_text(encoding="utf-8").splitlines()
-    assert "-- DM-ATS-A" in one_lines
-    assert "-- DM-TS-A" in one_lines
-    assert "-- DM-UTC-A" in one_lines
-    assert not any(line.startswith("-- DM-ATS-A ") for line in one_lines)
+    only_interval = tmp_path / "interval.tpi"
+    interval_db = TestDatabase()
+    _device(interval_db, profile, **{"time-synchronization-interval": 30})
+    write_epics(only_interval, profile, interval_db, RunConfig())
+    interval_lines = only_interval.read_text(encoding="utf-8").splitlines()
+    assert "-- DM-ATS-A" in interval_lines
+    assert "-- DM-TS-A" in interval_lines
+    assert "-- DM-UTC-A" in interval_lines
+    assert "UTCTimeSynchronization" not in interval_lines
 
 
 def test_restart_recipients_uncomment_dm_r_b(tmp_path):

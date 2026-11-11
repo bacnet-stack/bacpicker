@@ -133,10 +133,9 @@ _PROXY_PROPERTIES = {
     ),
     "DM-DAP-B": ("device-address-proxy-table",),
 }
-_TIME_SYNC_BIBBS = ("DM-ATS-A", "DM-TS-A", "DM-UTC-A")
-_TIME_SYNC_NOTE = (
-    "possible inclusion: time-synchronization-interval and time-synchronization-recipients"
-)
+_LOCAL_TIME_RECIPIENTS = "time-synchronization-recipients"
+_UTC_TIME_RECIPIENTS = "utc-time-synchronization-recipients"
+_TIME_SYNC_INTERVAL = "time-synchronization-interval"
 # I-Am and I-Have execute bits are dropped when those services are inferred as Initiate.
 # Other services keep an execute bit that is set alongside an inferred Initiate role.
 _INITIATE_ONLY_WHEN_INFERRED = {"i-am", "i-have"}
@@ -194,9 +193,14 @@ def bibb_listing(profile: Any, database: Any) -> Tuple[Dict[str, str], Dict[str,
     suggestions = _suggested_bibbs(profile, database)
     possible: Dict[str, str] = {}
     device_props = _device_properties(profile, database)
-    if {"time-synchronization-interval", "time-synchronization-recipients"} <= device_props:
-        for acronym in _TIME_SYNC_BIBBS:
-            possible[acronym] = _TIME_SYNC_NOTE
+    # 135-2024 12.11: each recipient list authorizes its own service. The interval is the
+    # period for both, so DM-ATS-A needs both lists as well as the interval.
+    if _LOCAL_TIME_RECIPIENTS in device_props:
+        possible["DM-TS-A"] = f"possible inclusion: {_LOCAL_TIME_RECIPIENTS}"
+    if _UTC_TIME_RECIPIENTS in device_props:
+        possible["DM-UTC-A"] = f"possible inclusion: {_UTC_TIME_RECIPIENTS}"
+    if {_LOCAL_TIME_RECIPIENTS, _UTC_TIME_RECIPIENTS, _TIME_SYNC_INTERVAL} <= device_props:
+        possible["DM-ATS-A"] = "possible inclusion: time-synchronization-interval and both recipient lists"
     if "restart-notification-recipients" in device_props:
         suggestions["DM-R-B"] = "initiates " + service_epics_name("unconfirmed-cov-notification")
     if any(record.object_type == "notification-class" for record in database.objects.values()):
@@ -285,10 +289,10 @@ def write_epics(path: Path, profile: Any, database: Any, config: Any) -> None:
         "BACnet Standard Application Services Supported:",
         "{",
         "-- Execute is from Protocol_Services_Supported. Initiate is inferred from",
-        "-- suggested BIBBs and from Device properties: time-synchronization-interval",
-        "-- with time-synchronization-recipients, restart-notification-recipients,",
-        "-- and a Notification Class object. I-Am is always inferred. Who-Am-I",
-        "-- Initiate and Who-Is Execute follow You-Are.",
+        "-- suggested BIBBs and from Device properties: each time-synchronization",
+        "-- recipient list, restart-notification-recipients, and a Notification Class",
+        "-- object. I-Am is always inferred. Who-Am-I Initiate and Who-Is Execute",
+        "-- follow You-Are.",
     ]
     for service in sorted(initiated | executed, key=service_epics_name):
         words = (["Initiate"] if service in initiated else []) + (["Execute"] if service in executed else [])

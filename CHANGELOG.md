@@ -50,11 +50,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--generate-epics` infers the Initiate services Annex K requires of each suggested
   BIBB, because Protocol_Services_Supported has only execute bits. A device that
   executes SubscribeCOV is listed as initiating ConfirmedCOVNotification and
-  UnconfirmedCOVNotification. Device `time-synchronization-interval` and
-  `time-synchronization-recipients` together list TimeSynchronization and
-  UTCTimeSynchronization Initiate, and leave DM-ATS-A, DM-TS-A and DM-UTC-A commented
-  as a possible inclusion. `restart-notification-recipients` uncomments DM-R-B, and a
-  Notification Class object uncomments AE-N-I-B.
+  UnconfirmedCOVNotification. `time-synchronization-recipients` lists
+  TimeSynchronization Initiate and leaves DM-TS-A commented as a possible inclusion.
+  `utc-time-synchronization-recipients` does the same for UTCTimeSynchronization and
+  DM-UTC-A. Both lists together with `time-synchronization-interval` also leave
+  DM-ATS-A as a possible inclusion. `restart-notification-recipients` uncomments DM-R-B,
+  and a Notification Class object uncomments AE-N-I-B.
 - `--generate-epics` lists every Annex K BIBB the device appears to support uncommented,
   with the reason it was included. DS-RP-B stays uncommented even when ReadProperty
   cannot be inferred, because every device must support it. The remaining BIBBs stay
