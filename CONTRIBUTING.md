@@ -97,8 +97,15 @@ submitting:
 1. Create a branch for your change.
 2. Keep commits focused, with messages that reference the 135.1 clause where relevant.
 3. Run the self-tests.
-4. Add an entry under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for user-visible changes.
-5. Open a pull request describing the change and, for test changes, the standard
+4. Run Ruff and Pyright:
+
+   ```sh
+   .venv/bin/python -m ruff check .
+   .venv/bin/python -m pyright --pythonpath .venv/bin/python
+   ```
+
+5. Add an entry under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for user-visible changes.
+6. Open a pull request describing the change and, for test changes, the standard
    text it implements.
 
 ## License
