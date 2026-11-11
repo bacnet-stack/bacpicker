@@ -258,7 +258,11 @@ class TestContext(AssertionsMixin):
 
     def property_type(self, objid: ObjectIdentifier, prop: str) -> Any:
         object_class = self.object_class(objid)
-        ptype = object_class.get_property_type(PropertyIdentifier(prop)) if object_class else None
+        try:
+            identifier = PropertyIdentifier(prop)
+        except ValueError:
+            return FALLBACK_PROPERTY_TYPES.get(prop)
+        ptype = object_class.get_property_type(identifier) if object_class else None
         return ptype or FALLBACK_PROPERTY_TYPES.get(prop)
 
     def model_properties(self, objid: ObjectIdentifier) -> Set[str]:

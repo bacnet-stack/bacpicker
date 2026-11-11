@@ -56,6 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   DM-UTC-A. Both lists together with `time-synchronization-interval` also leave
   DM-ATS-A as a possible inclusion. `restart-notification-recipients` uncomments DM-R-B,
   and a Notification Class object uncomments AE-N-I-B.
+- Lighting Output `last-on-value` and `default-on-value` are required starting at
+  Protocol_Revision 28 (Addendum cj to 135-2020). Clause 5(i) does not require them
+  on an earlier revision.
 - `--generate-epics` lists every Annex K BIBB the device appears to support uncommented,
   with the reason it was included. DS-RP-B stays uncommented even when ReadProperty
   cannot be inferred, because every device must support it. The remaining BIBBs stay

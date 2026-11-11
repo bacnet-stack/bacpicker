@@ -344,6 +344,14 @@ def test_device_address_proxy_table_suggests_dm_dap_b(tmp_path):
     assert default_on is not None and default_on.optional is False and default_on.minimum == 1
 
 
+def test_lighting_on_values_are_required_from_protocol_revision_28():
+    spec = object_spec("lighting-output")
+    assert spec is not None
+    assert "last-on-value" not in spec.required(14)
+    assert "default-on-value" not in spec.required(27)
+    assert {"last-on-value", "default-on-value"} <= spec.required(28)
+
+
 async def test_missing_read_property_fails_clause_5e(tmp_path):
     path = tmp_path / "iut.tpi"
     profile = make_profile(services_supported=set())

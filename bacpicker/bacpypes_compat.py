@@ -22,7 +22,7 @@ from bacpypes3 import basetypes
 from bacpypes3 import object as objects
 from bacpypes3.basetypes import ChannelValue, ValueSource
 from bacpypes3.constructeddata import Sequence
-from bacpypes3.object import LightingOutputObject, Object
+from bacpypes3.object import DeviceObject, LightingOutputObject, NetworkPortObject, Object
 from bacpypes3.primitivedata import (
     Boolean,
     Enumerated,
@@ -43,6 +43,28 @@ PROPERTY_IDENTIFIERS = {
     "defaultColorTemperature": 4194331,
     "overrideColorReference": 4194332,
     "colorCommand": 4194334,
+    # 135-2024 Clause 21 identifiers after CSML dataRev 24. Addendum cj to 135-2020
+    # (Protocol_Revision 28) adds the lighting values; the proxy and authorization
+    # identifiers are in the same enumeration block.
+    "deviceAddressProxyEnable": 4194338,
+    "deviceAddressProxyTable": 4194339,
+    "deviceAddressProxyTimeout": 4194340,
+    "defaultOnValue": 4194341,
+    "lastOnValue": 4194342,
+    "authorizationCache": 4194343,
+    "authorizationGroups": 4194344,
+    "authorizationPolicy": 4194345,
+    "authorizationScope": 4194346,
+    "authorizationServer": 4194347,
+    "authorizationStatus": 4194348,
+    "maxProxiedIAmsPerSecond": 4194349,
+}
+
+
+# attr_to_asn1("maxProxiedIAmsPerSecond") yields "max-proxied-iams-per-second".
+# Clause 21 spells the identifier with "i-ams".
+_CANONICAL_NAMES = {
+    "maxProxiedIAmsPerSecond": "max-proxied-i-ams-per-second",
 }
 
 
@@ -53,7 +75,7 @@ def _add_enumeration(cls: Any, attr: str, value: int) -> None:
         _add_enumeration(subclass, attr, value)
     if attr in cls._enum_map:
         return
-    name = attr_to_asn1(attr)
+    name = _CANONICAL_NAMES.get(attr, attr_to_asn1(attr))
     cls._enum_map[attr] = value
     cls._enum_map[name] = value
     cls._attr_map[value] = attr
@@ -139,8 +161,18 @@ for _attr, _type in (
     ("colorOverride", Boolean),
     ("colorReference", ObjectIdentifier),
     ("overrideColorReference", ObjectIdentifier),
+    ("lastOnValue", Real),
+    ("defaultOnValue", Real),
 ):
     LightingOutputObject._elements.setdefault(_attr, _type)
+
+for _attr, _type in (
+    ("deviceAddressProxyEnable", Boolean),
+    ("deviceAddressProxyTimeout", Unsigned),
+):
+    NetworkPortObject._elements.setdefault(_attr, _type)
+
+DeviceObject._elements.setdefault("maxProxiedIAmsPerSecond", Unsigned)
 
 
 def _object_class(name: str, object_type: str, properties: Dict[str, Any], required: Tuple[str, ...]) -> Any:

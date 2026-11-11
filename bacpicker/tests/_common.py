@@ -557,6 +557,9 @@ async def writable_properties(ctx: TestContext, objid: ObjectIdentifier) -> List
     database = await ctx.test_database()
     record = database.objects.get(objid)
     if record is not None:
+        # A conformance-code W property the device does not have is not writable here.
+        present = {name for name, prop in record.properties.items() if prop.error is None}
+        names &= present
         for name, prop in record.properties.items():
             if prop.writable is True:
                 names.add(name)
