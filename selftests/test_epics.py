@@ -17,6 +17,7 @@ from bacpicker.iut import build_application, build_profile, discover_iut
 from bacpicker.registry import get_test
 from bacpicker.result import Status
 from bacpicker.runner import Runner
+from bacpicker.standard import object_spec, property_identifiers
 
 
 async def generate(config, path):
@@ -271,6 +272,37 @@ def test_proxy_bibbs_stay_commented_without_proxy_properties(tmp_path):
     assert not any(line.startswith("DM-SP-B ") or line.startswith("DM-DAP-B ") for line in lines)
     assert "ReadProperty Execute" in lines
     assert "ReadProperty Initiate" not in lines
+
+
+def test_device_address_proxy_table_suggests_dm_dap_b(tmp_path):
+    assert property_identifiers()[4194339] == "device-address-proxy-table"
+    path = tmp_path / "dap.tpi"
+    profile = make_profile(
+        services_supported={
+            "add-list-element",
+            "read-property",
+            "read-range",
+            "remove-list-element",
+            "who-is",
+            "write-property",
+        }
+    )
+    database = TestDatabase()
+    _device(database, profile, **{"device-address-proxy-table": []})
+    write_epics(path, profile, database, RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert any(line.startswith("DM-DAP-B ") for line in lines)
+    assert "ReadProperty Initiate Execute" in lines
+    assert "-- DM-SP-B" in lines
+    device = object_spec("device")
+    assert device.get("device-address-proxy-table").writable is False
+    port = object_spec("network-port")
+    assert port.get("device-address-proxy-enable").writable is True
+    assert port.get("device-address-proxy-timeout").maximum == 300
+    lighting = object_spec("lighting-output")
+    assert lighting.get("last-on-value").writable is False
+    assert lighting.get("default-on-value").optional is False
+    assert lighting.get("default-on-value").minimum == 1
 
 
 async def test_missing_read_property_fails_clause_5e(tmp_path):

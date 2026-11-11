@@ -490,6 +490,7 @@ async def wrong_datatype(ctx: TestContext) -> None:
 async def out_of_range(ctx: TestContext) -> None:
     from ._common import ranged_property
 
+    await ctx.test_database()
     found = ranged_property(ctx)
     if found is None:
         ctx.skip("no writable property with a restricted range is defined for the IUT")

@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The property-identifier map includes 135-2024 Clause 21 identifiers 4194338–4194349,
+  which ASHRAE CSML dataRev 24 does not yet publish. Device, Network Port, and
+  Lighting Output include the properties Clause 12 assigns to them, so a live read
+  of Device_Address_Proxy_Table is named `device-address-proxy-table`.
 - `--generate-epics` infers the Initiate services Annex K requires of each suggested
   BIBB, because Protocol_Services_Supported has only execute bits. A device that
   executes SubscribeCOV is listed as initiating ConfirmedCOVNotification and

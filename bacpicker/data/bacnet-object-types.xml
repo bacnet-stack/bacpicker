@@ -444,6 +444,14 @@
             <Enumerated name="audit-level" optional="true" propertyIdentifier="498" type="0-BACnetAuditLevel" variability="configuration-setting"/>
             <BitString name="auditable-operations" optional="true" propertyIdentifier="501" type="0-BACnetAuditOperationFlags" variability="configuration-setting"/>
             <OctetString name="device-uuid" optional="true" propertyIdentifier="507" writable="false"/>
+            <Sequence name="authorization-server" optional="true" propertyIdentifier="4194347" type="0-BACnetAuthorizationServer"/>
+            <Sequence name="authorization-status" optional="true" propertyIdentifier="4194348" type="0-BACnetAuthorizationStatus" writable="false"/>
+            <Array name="authorization-policy" memberType="0-BACnetAuthorizationPolicy" optional="true" propertyIdentifier="4194345"/>
+            <Array name="authorization-scope" memberType="0-BACnetAuthorizationScopeDescription" optional="true" propertyIdentifier="4194346" writable="false"/>
+            <List name="authorization-cache" memberType="0-BACnetAccessToken" optional="true" propertyIdentifier="4194343" writable="false"/>
+            <Array name="authorization-groups" memberType="Unsigned" optional="true" propertyIdentifier="4194344"/>
+            <Unsigned name="max-proxied-i-ams-per-second" minimum="1" optional="true" propertyIdentifier="4194349" writable="true"/>
+            <List name="device-address-proxy-table" memberType="0-BACnetDeviceAddressProxyTableEntry" optional="true" propertyIdentifier="4194339" writable="false"/>
             <Array name="tags" memberType="0-BACnetNameValue" optional="true" propertyIdentifier="486" variability="configuration-setting"/>
             <String name="profile-location" optional="true" propertyIdentifier="485" variability="configuration-setting"/>
             <String name="deployed-profile-location" optional="true" propertyIdentifier="484" writable="true"/>
@@ -2026,6 +2034,8 @@
             <Array name="value-source-array" maximumSize="16" memberType="0-BACnetValueSource" minimumSize="16" optional="true" propertyIdentifier="434" variability="status" writable="false"/>
             <Choice name="last-command-time" optional="true" propertyIdentifier="432" type="0-BACnetTimeStamp" variability="status" writable="false"/>
             <Array name="command-time-array" maximumSize="16" memberType="0-BACnetTimeStamp" minimumSize="16" optional="true" propertyIdentifier="430" variability="status" writable="false"/>
+            <Real name="last-on-value" propertyIdentifier="4194342" writable="false"/>
+            <Real name="default-on-value" maximum="100" minimum="1" propertyIdentifier="4194341"/>
             <ObjectIdentifier name="color-reference" optional="true" propertyIdentifier="4194329"/>
             <Boolean name="color-override" optional="true" propertyIdentifier="4194328" writable="true"/>
             <ObjectIdentifier name="override-color-reference" optional="true" propertyIdentifier="4194332"/>
@@ -2148,6 +2158,8 @@
             <List name="manual-subordinate-address-binding" memberType="0-BACnetAddressBinding" optional="true" propertyIdentifier="170"/>
             <Boolean name="auto-subordinate-discovery" optional="true" propertyIdentifier="169"/>
             <List name="subordinate-address-binding" memberType="0-BACnetAddressBinding" optional="true" propertyIdentifier="171" writable="false"/>
+            <Boolean name="device-address-proxy-enable" optional="true" propertyIdentifier="4194338" writable="true"/>
+            <Unsigned name="device-address-proxy-timeout" maximum="300" optional="true" propertyIdentifier="4194340" units="seconds" writable="true"/>
             <List name="virtual-mac-address-table" memberType="0-BACnetVMACEntry" optional="true" propertyIdentifier="429"/>
             <List name="routing-table" memberType="0-BACnetRouterEntry" optional="true" propertyIdentifier="428" writable="false"/>
             <Boolean name="event-detection-enable" optional="true" propertyIdentifier="353" requiredWith="notification-class,event-enable,acked-transitions,notify-type,event-time-stamps,event-message-texts,event-message-texts-config" variability="operation-setting"/>
