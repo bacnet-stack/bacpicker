@@ -327,14 +327,21 @@ def test_device_address_proxy_table_suggests_dm_dap_b(tmp_path):
     assert "ReadProperty Initiate Execute" in lines
     assert "-- DM-SP-B" in lines
     device = object_spec("device")
-    assert device.get("device-address-proxy-table").writable is False
+    assert device is not None
+    proxy_table = device.get("device-address-proxy-table")
+    assert proxy_table is not None and proxy_table.writable is False
     port = object_spec("network-port")
-    assert port.get("device-address-proxy-enable").writable is True
-    assert port.get("device-address-proxy-timeout").maximum == 300
+    assert port is not None
+    proxy_enable = port.get("device-address-proxy-enable")
+    proxy_timeout = port.get("device-address-proxy-timeout")
+    assert proxy_enable is not None and proxy_enable.writable is True
+    assert proxy_timeout is not None and proxy_timeout.maximum == 300
     lighting = object_spec("lighting-output")
-    assert lighting.get("last-on-value").writable is False
-    assert lighting.get("default-on-value").optional is False
-    assert lighting.get("default-on-value").minimum == 1
+    assert lighting is not None
+    last_on = lighting.get("last-on-value")
+    default_on = lighting.get("default-on-value")
+    assert last_on is not None and last_on.writable is False
+    assert default_on is not None and default_on.optional is False and default_on.minimum == 1
 
 
 async def test_missing_read_property_fails_clause_5e(tmp_path):
