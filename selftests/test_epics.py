@@ -11,12 +11,13 @@ from test_end_to_end import run_suite
 from test_framework import make_profile
 
 from bacpicker.config import RunConfig
-from bacpicker.database import ObjectRecord, TestDatabase, read_database, read_object
+from bacpicker.database import ObjectRecord, PropertyRecord, TestDatabase, read_database, read_object
 from bacpicker.epics import parse_epics, write_epics
 from bacpicker.iut import build_application, build_profile, discover_iut
 from bacpicker.registry import get_test
 from bacpicker.result import Status
 from bacpicker.runner import Runner
+from bacpicker.standard import object_spec, property_identifiers
 
 
 async def generate(config, path):
@@ -114,6 +115,241 @@ def test_you_are_implies_who_am_i_initiate_and_who_is_execute(tmp_path):
     assert "Who-Is Execute" in lines
     assert "You-Are Execute" in lines
     assert parse_epics(path).services["who-am-i"] == {"initiate"}
+
+
+def _device(database, profile, **properties):
+    record = ObjectRecord(objid=profile.device_id, object_type="device", source="rpm-all")
+    for name, value in properties.items():
+        record.properties[name] = PropertyRecord(name=name, identifier=0, value=value)
+    database.objects[profile.device_id] = record
+    return record
+
+
+def _object(database, object_type, instance=1):
+    objid = ObjectIdentifier(f"{object_type},{instance}")
+    database.objects[objid] = ObjectRecord(objid=objid, object_type=object_type, source="rpm-all")
+    return objid
+
+
+def _drop_service_lines(path, *services):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    kept = [line for line in lines if line not in services]
+    path.write_bytes(("\r\n".join(kept) + "\r\n").encode("utf-8"))
+
+
+async def _run_5d(profile, path, database):
+    return await Runner(
+        None,
+        profile,
+        RunConfig(),
+        shared={"epics": parse_epics(path), "database": database},
+    ).run_one(get_test("5(d)"), {})
+
+
+def test_subscribe_cov_infers_notification_initiate(tmp_path):
+    path = tmp_path / "cov.tpi"
+    profile = make_profile(services_supported={"read-property", "subscribe-cov"})
+    write_epics(path, profile, TestDatabase(), RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert "ConfirmedCOVNotification Initiate" in lines
+    assert "UnconfirmedCOVNotification Initiate" in lines
+    assert any(line.startswith("DS-COV-B ") for line in lines)
+
+
+async def test_clause_5d_infers_cov_initiate_missing_from_epics(tmp_path):
+    path = tmp_path / "cov.tpi"
+    profile = make_profile(services_supported={"read-property", "subscribe-cov"})
+    database = TestDatabase()
+    write_epics(path, profile, database, RunConfig())
+    _drop_service_lines(path, "ConfirmedCOVNotification Initiate", "UnconfirmedCOVNotification Initiate")
+    result = await _run_5d(profile, path, database)
+    assert result.status is Status.PASS, [d.message for d in result.defects]
+    assert any("DS-COV-B" in step and "SubscribeCOV" in step for step in result.steps)
+
+
+async def test_clause_5d_fails_cov_initiate_without_subscribe_cov(tmp_path):
+    path = tmp_path / "cov.tpi"
+    # The file lists SubscribeCOV Execute and DS-COV-B, but the device does not execute it,
+    # so the Initiate roles are not inferred.
+    profile = make_profile(services_supported={"read-property", "subscribe-cov"})
+    write_epics(path, profile, TestDatabase(), RunConfig())
+    _drop_service_lines(path, "ConfirmedCOVNotification Initiate", "UnconfirmedCOVNotification Initiate")
+    checked = make_profile(services_supported={"read-property"})
+    result = await _run_5d(checked, path, TestDatabase())
+    assert result.status is Status.FAIL
+    assert any("ConfirmedCOVNotification" in defect.message for defect in result.defects)
+
+
+async def test_clause_5d_infers_event_notification_from_notification_class(tmp_path):
+    path = tmp_path / "event.tpi"
+    profile = make_profile(services_supported={"read-property"})
+    database = TestDatabase()
+    _object(database, "notification-class")
+    write_epics(path, profile, database, RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert any(line.startswith("AE-N-I-B ") for line in lines)
+    assert "UnconfirmedEventNotification Initiate" in lines
+    assert "ConfirmedEventNotification Initiate" not in lines
+    _drop_service_lines(path, "UnconfirmedEventNotification Initiate")
+    result = await _run_5d(profile, path, database)
+    assert result.status is Status.PASS, [d.message for d in result.defects]
+    assert any("AE-N-I-B" in step for step in result.steps)
+
+
+async def test_clause_5d_infers_vt_initiate(tmp_path):
+    path = tmp_path / "vt.tpi"
+    profile = make_profile(services_supported={"read-property", "vt-open", "vt-close", "vt-data"})
+    database = TestDatabase()
+    write_epics(path, profile, database, RunConfig())
+    text = path.read_text(encoding="utf-8")
+    text = text.replace("VT-Close Initiate Execute", "VT-Close Execute")
+    text = text.replace("VT-Data Initiate Execute", "VT-Data Execute")
+    path.write_bytes(text.encode("utf-8"))
+    result = await _run_5d(profile, path, database)
+    assert result.status is Status.PASS, [d.message for d in result.defects]
+    assert any("DM-VT-B" in step for step in result.steps)
+
+
+def _possible(acronym, evidence):
+    return f"-- {acronym:<16}-- possible inclusion: {evidence}"
+
+
+def test_time_sync_properties_are_a_possible_inclusion(tmp_path):
+    profile = make_profile(services_supported={"read-property", "time-synchronization"})
+
+    local = tmp_path / "local.tpi"
+    local_db = TestDatabase()
+    _device(local_db, profile, **{"time-synchronization-recipients": []})
+    write_epics(local, profile, local_db, RunConfig())
+    local_text = local.read_text(encoding="utf-8")
+    assert _possible("DM-TS-A", "time-synchronization-recipients") in local_text
+    assert "TimeSynchronization Initiate Execute" in local_text
+    assert "UTCTimeSynchronization" not in local_text
+    assert "-- DM-UTC-A" in local_text.splitlines()
+    assert "-- DM-ATS-A" in local_text.splitlines()
+
+    utc = tmp_path / "utc.tpi"
+    utc_db = TestDatabase()
+    _device(utc_db, profile, **{"utc-time-synchronization-recipients": []})
+    write_epics(utc, profile, utc_db, RunConfig())
+    utc_lines = utc.read_text(encoding="utf-8").splitlines()
+    assert _possible("DM-UTC-A", "utc-time-synchronization-recipients") in "\n".join(utc_lines)
+    assert "UTCTimeSynchronization Initiate" in utc_lines
+    assert "TimeSynchronization Execute" in utc_lines
+    assert "TimeSynchronization Initiate Execute" not in utc_lines
+    assert "-- DM-TS-A" in utc_lines
+    assert "-- DM-ATS-A" in utc_lines
+
+    both = tmp_path / "both.tpi"
+    both_db = TestDatabase()
+    _device(
+        both_db,
+        profile,
+        **{
+            "time-synchronization-interval": 0,
+            "time-synchronization-recipients": [],
+            "utc-time-synchronization-recipients": [],
+        },
+    )
+    write_epics(both, profile, both_db, RunConfig())
+    both_text = both.read_text(encoding="utf-8")
+    assert _possible("DM-TS-A", "time-synchronization-recipients") in both_text
+    assert _possible("DM-UTC-A", "utc-time-synchronization-recipients") in both_text
+    assert _possible("DM-ATS-A", "time-synchronization-interval and both recipient lists") in both_text
+    assert "TimeSynchronization Initiate Execute" in both_text
+    assert "UTCTimeSynchronization Initiate" in both_text
+    claimed = parse_epics(both).bibbs
+    assert "DM-ATS-A" not in claimed and "DM-TS-A" not in claimed and "DM-UTC-A" not in claimed
+
+    only_interval = tmp_path / "interval.tpi"
+    interval_db = TestDatabase()
+    _device(interval_db, profile, **{"time-synchronization-interval": 30})
+    write_epics(only_interval, profile, interval_db, RunConfig())
+    interval_lines = only_interval.read_text(encoding="utf-8").splitlines()
+    assert "-- DM-ATS-A" in interval_lines
+    assert "-- DM-TS-A" in interval_lines
+    assert "-- DM-UTC-A" in interval_lines
+    assert "UTCTimeSynchronization" not in interval_lines
+
+
+def test_restart_recipients_uncomment_dm_r_b(tmp_path):
+    path = tmp_path / "restart.tpi"
+    profile = make_profile(services_supported={"read-property"})
+    database = TestDatabase()
+    _device(database, profile, **{"restart-notification-recipients": []})
+    write_epics(path, profile, database, RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert any(line.startswith("DM-R-B ") for line in lines)
+    assert "UnconfirmedCOVNotification Initiate" in lines
+    assert "DM-R-B" in parse_epics(path).bibbs
+    assert "-- DS-COVU-B" in lines
+
+
+def test_proxy_bibbs_stay_commented_without_proxy_properties(tmp_path):
+    path = tmp_path / "proxy.tpi"
+    profile = make_profile(
+        services_supported={
+            "add-list-element",
+            "read-property",
+            "read-range",
+            "remove-list-element",
+            "who-is",
+            "write-property",
+        }
+    )
+    write_epics(path, profile, TestDatabase(), RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert "-- DM-SP-B" in lines
+    assert "-- DM-DAP-B" in lines
+    assert not any(line.startswith("DM-SP-B ") or line.startswith("DM-DAP-B ") for line in lines)
+    assert "ReadProperty Execute" in lines
+    assert "ReadProperty Initiate" not in lines
+
+
+def test_device_address_proxy_table_suggests_dm_dap_b(tmp_path):
+    assert property_identifiers()[4194339] == "device-address-proxy-table"
+    path = tmp_path / "dap.tpi"
+    profile = make_profile(
+        services_supported={
+            "add-list-element",
+            "read-property",
+            "read-range",
+            "remove-list-element",
+            "who-is",
+            "write-property",
+        }
+    )
+    database = TestDatabase()
+    _device(database, profile, **{"device-address-proxy-table": []})
+    write_epics(path, profile, database, RunConfig())
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert any(line.startswith("DM-DAP-B ") for line in lines)
+    assert "ReadProperty Initiate Execute" in lines
+    assert "-- DM-SP-B" in lines
+    device = object_spec("device")
+    assert device is not None
+    proxy_table = device.get("device-address-proxy-table")
+    assert proxy_table is not None and proxy_table.writable is False
+    port = object_spec("network-port")
+    assert port is not None
+    proxy_enable = port.get("device-address-proxy-enable")
+    proxy_timeout = port.get("device-address-proxy-timeout")
+    assert proxy_enable is not None and proxy_enable.writable is True
+    assert proxy_timeout is not None and proxy_timeout.maximum == 300
+    lighting = object_spec("lighting-output")
+    assert lighting is not None
+    last_on = lighting.get("last-on-value")
+    default_on = lighting.get("default-on-value")
+    assert last_on is not None and last_on.writable is False
+    assert default_on is not None and default_on.optional is False and default_on.minimum == 1
+
+
+def test_lighting_on_values_are_required_from_protocol_revision_28():
+    spec = object_spec("lighting-output")
+    assert spec is not None
+    assert "last-on-value" not in spec.required(14)
+    assert "default-on-value" not in spec.required(27)
+    assert {"last-on-value", "default-on-value"} <= spec.required(28)
 
 
 async def test_missing_read_property_fails_clause_5e(tmp_path):

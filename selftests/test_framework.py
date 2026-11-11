@@ -10,13 +10,15 @@ from bacpypes3.pdu import Address
 from bacpypes3.primitivedata import ObjectIdentifier
 
 from bacpicker.config import RunConfig
-from bacpicker.context import DeviceProfile
+from bacpicker.context import DeviceProfile, TestContext
+from bacpicker.database import ObjectRecord, PropertyRecord, TestDatabase
 from bacpicker.iut import broadcast_listen_address
 from bacpicker.registry import TestCase, clause_sort_key
 from bacpicker.reporting.console import ConsoleReporter
 from bacpicker.reporting.markdown_html import render_html, render_markdown
-from bacpicker.result import Status
+from bacpicker.result import Status, TestResult
 from bacpicker.runner import Runner, filter_tests, order_tests
+from bacpicker.tests._common import writable_properties
 
 
 def make_case(clause, func=None, **kwargs):
@@ -110,3 +112,28 @@ def test_broadcast_listen_address_per_platform():
     assert broadcast_listen_address(server, windows=False) == (("192.0.2.255", 47808), True)
     # Windows has no SO_REUSEPORT and receives broadcasts on the unicast address
     assert broadcast_listen_address(server, windows=True) == (("192.0.2.10", 47808), False)
+
+
+async def test_writable_properties_keep_an_array_that_was_too_large_to_read():
+    profile = make_profile()
+    objid = ObjectIdentifier("load-control,1")
+    record = ObjectRecord(objid=objid, object_type="load-control", source="property-list")
+    record.properties["shed-levels"] = PropertyRecord(
+        name="shed-levels", identifier=221, error="abort: buffer-overflow"
+    )
+    record.properties["requested-shed-level"] = PropertyRecord(
+        name="requested-shed-level", identifier=218, error="property: unknown-property"
+    )
+    database = TestDatabase()
+    database.objects[objid] = record
+    ctx = TestContext(
+        None,
+        profile,
+        RunConfig(),
+        make_case("9.22.1.1"),
+        TestResult(clause="9.22.1.1", title="array", module="m"),
+        {"database": database},
+    )
+    names = await writable_properties(ctx, objid)
+    assert "shed-levels" in names
+    assert "requested-shed-level" not in names

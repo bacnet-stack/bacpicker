@@ -43,6 +43,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The property-identifier map includes 135-2024 Clause 21 identifiers 4194338–4194349,
+  which ASHRAE CSML dataRev 24 does not yet publish. Device, Network Port, and
+  Lighting Output include the properties Clause 12 assigns to them, so a live read
+  of Device_Address_Proxy_Table is named `device-address-proxy-table`.
+- `--generate-epics` infers the Initiate services Annex K requires of each suggested
+  BIBB, because Protocol_Services_Supported has only execute bits. A device that
+  executes SubscribeCOV is listed as initiating ConfirmedCOVNotification and
+  UnconfirmedCOVNotification. `time-synchronization-recipients` lists
+  TimeSynchronization Initiate and leaves DM-TS-A commented as a possible inclusion.
+  `utc-time-synchronization-recipients` does the same for UTCTimeSynchronization and
+  DM-UTC-A. Both lists together with `time-synchronization-interval` also leave
+  DM-ATS-A as a possible inclusion. `restart-notification-recipients` uncomments DM-R-B,
+  and a Notification Class object uncomments AE-N-I-B.
+- Lighting Output `last-on-value` and `default-on-value` are required starting at
+  Protocol_Revision 28 (Addendum cj to 135-2020). Clause 5(i) does not require them
+  on an earlier revision.
 - `--generate-epics` lists every Annex K BIBB the device appears to support uncommented,
   with the reason it was included. DS-RP-B stays uncommented even when ReadProperty
   cannot be inferred, because every device must support it. The remaining BIBBs stay
@@ -52,6 +68,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Clause 5(d) accepts a BIBB Initiate role that the device evidence implies when the
+  EPICS omits it, and notes that inference. DS-COV-B no longer fails for
+  ConfirmedCOVNotification Initiate solely because the execute bit string cannot say
+  Initiate.
 - HTML report showed each test step number twice.
 - On Windows, listening for broadcasts on port 47808 failed with "reuse_port not
   supported by socket module".

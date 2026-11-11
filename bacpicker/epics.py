@@ -6,9 +6,12 @@
 The writer turns the test database read from the IUT into an EPICS. Annex K BIBBs the
 device appears to support are listed uncommented, with the reason each was included.
 DS-RP-B is always listed uncommented, because every device must support it; when that
-support cannot be inferred, the reason says so. The remaining Annex K BIBBs are listed
-commented out. The user reviews those claims (and can edit Initiate support, Fail Times
-and restrictions), then passes the file with --epics.
+support cannot be inferred, the reason says so. A-side BIBBs that the device properties
+make possible stay commented, with a possible-inclusion note. The remaining Annex K
+BIBBs are listed commented out. Initiate roles that Annex K requires of a suggested
+BIBB are inferred, because Protocol_Services_Supported has no Initiate bits. The user
+reviews those claims (and can edit Initiate support, Fail Times and restrictions), then
+passes the file with --epics.
 """
 
 from __future__ import annotations
@@ -119,10 +122,46 @@ def format_value(value: Any) -> str:
 # ReadProperty bit instead of skipping for lack of any declared BIBB.
 MANDATORY_BIBBS = {"DS-RP-B": "required of all BACnet devices"}
 
+# These execute lists are ordinary services, so the BIBB is suggested only when the
+# proxy properties Annex K requires are actually present.
+_PROXY_PROPERTIES = {
+    "DM-SP-B": (
+        "subordinate-proxy-enable",
+        "manual-subordinate-address-binding",
+        "auto-subordinate-discovery",
+        "subordinate-address-binding",
+    ),
+    "DM-DAP-B": ("device-address-proxy-table",),
+}
+_LOCAL_TIME_RECIPIENTS = "time-synchronization-recipients"
+_UTC_TIME_RECIPIENTS = "utc-time-synchronization-recipients"
+_TIME_SYNC_INTERVAL = "time-synchronization-interval"
+# I-Am and I-Have execute bits are dropped when those services are inferred as Initiate.
+# Other services keep an execute bit that is set alongside an inferred Initiate role.
+_INITIATE_ONLY_WHEN_INFERRED = {"i-am", "i-have"}
+
+
+def _read_properties(record: Any) -> Set[str]:
+    if record is None:
+        return set()
+    return {name for name, prop in record.properties.items() if prop.present and prop.error is None}
+
+
+def _present_properties(database: Any) -> Set[str]:
+    names: Set[str] = set()
+    for record in database.objects.values():
+        names |= _read_properties(record)
+    return names
+
+
+def _device_properties(profile: Any, database: Any) -> Set[str]:
+    return _read_properties(database.objects.get(profile.device_id))
+
 
 def _suggested_bibbs(profile: Any, database: Any) -> Dict[str, str]:
     """B-side BIBBs whose execute services and object types the IUT appears to support."""
     present = {r.object_type for r in database.objects.values()}
+    properties = _present_properties(database)
     suggestions = {}
     for acronym, bibb in bibbs().items():
         if not acronym.endswith("-B") or not (bibb.execute or bibb.object_types):
@@ -130,6 +169,9 @@ def _suggested_bibbs(profile: Any, database: Any) -> Dict[str, str]:
         if not all(profile.supports_service(s) for s in bibb.execute):
             continue
         if not all(any(t in present for t in alt) for alt in bibb.object_types):
+            continue
+        required = _PROXY_PROPERTIES.get(acronym)
+        if required and not all(name in properties for name in required):
             continue
         if bibb.execute:
             suggestions[acronym] = "executes " + ", ".join(service_epics_name(s) for s in bibb.execute)
@@ -140,6 +182,59 @@ def _suggested_bibbs(profile: Any, database: Any) -> Dict[str, str]:
         if acronym[:-4] + "-I-B" in suggestions:
             del suggestions[acronym]
     return suggestions
+
+
+def bibb_listing(profile: Any, database: Any) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Uncommented BIBB hints, and commented A-side BIBBs that are a possible inclusion.
+
+    Property-driven B-side BIBBs have no execute bit Protocol_Services_Supported can show.
+    The A-side time-sync BIBBs stay commented so clause 5 does not treat them as claimed.
+    """
+    suggestions = _suggested_bibbs(profile, database)
+    possible: Dict[str, str] = {}
+    device_props = _device_properties(profile, database)
+    # 135-2024 12.11: each recipient list authorizes its own service. The interval is the
+    # period for both, so DM-ATS-A needs both lists as well as the interval.
+    if _LOCAL_TIME_RECIPIENTS in device_props:
+        possible["DM-TS-A"] = f"possible inclusion: {_LOCAL_TIME_RECIPIENTS}"
+    if _UTC_TIME_RECIPIENTS in device_props:
+        possible["DM-UTC-A"] = f"possible inclusion: {_UTC_TIME_RECIPIENTS}"
+    if {_LOCAL_TIME_RECIPIENTS, _UTC_TIME_RECIPIENTS, _TIME_SYNC_INTERVAL} <= device_props:
+        possible["DM-ATS-A"] = "possible inclusion: time-synchronization-interval and both recipient lists"
+    if "restart-notification-recipients" in device_props:
+        suggestions["DM-R-B"] = "initiates " + service_epics_name("unconfirmed-cov-notification")
+    if any(record.object_type == "notification-class" for record in database.objects.values()):
+        suggestions["AE-N-I-B"] = "initiates " + service_epics_name("unconfirmed-event-notification")
+    return suggestions, possible
+
+
+def inferred_roles(profile: Any, database: Any) -> Dict[Tuple[str, str], str]:
+    """(service, role) pairs implied by Annex K, with the evidence for each.
+
+    Role is "initiate" or "execute". Suggested BIBBs contribute their required Initiate
+    services. I-Am is always initiated. Executing You-Are also implies Who-Am-I Initiate
+    and Who-Is Execute. Conditional Annex K cells are not included.
+    """
+    suggestions, possible = bibb_listing(profile, database)
+    known = bibbs()
+    reasons: Dict[Tuple[str, str], List[str]] = {}
+
+    def add(service: str, role: str, reason: str) -> None:
+        reasons.setdefault((service, role), [])
+        if reason not in reasons[(service, role)]:
+            reasons[(service, role)].append(reason)
+
+    add("i-am", "initiate", "every BACnet device initiates I-Am")
+    for acronym, hint in {**suggestions, **possible}.items():
+        bibb = known.get(acronym)
+        if bibb is None:
+            continue
+        for service in bibb.initiate:
+            add(service, "initiate", f"{acronym} ({hint})")
+    if profile.supports_service("you-are"):
+        add("who-am-i", "initiate", "executes You-Are")
+        add("who-is", "execute", "executes You-Are")
+    return {key: "; ".join(values) for key, values in reasons.items()}
 
 
 def write_epics(path: Path, profile: Any, database: Any, config: Any) -> None:
@@ -169,34 +264,39 @@ def write_epics(path: Path, profile: Any, database: Any, config: Any) -> None:
         "BIBBs Supported:",
         "{",
         "-- Uncommented BIBBs are ones the device appears to support, based on",
-        "-- Protocol_Services_Supported and the objects present. DS-RP-B is",
-        "-- always listed; it is required of all BACnet devices.",
+        "-- Protocol_Services_Supported, the objects present, and Device properties.",
+        "-- DS-RP-B is always listed; it is required of all BACnet devices.",
+        "-- A commented BIBB with 'possible inclusion' is an A-side claim the",
+        "-- device properties support. Remove the leading '--' to claim it.",
     ]
-    suggestions = _suggested_bibbs(profile, database)
+    suggestions, possible = bibb_listing(profile, database)
     for acronym in sorted(bibbs()):
         hint = suggestions.get(acronym) or MANDATORY_BIBBS.get(acronym)
         if hint:
             lines.append(f"{acronym:<19}-- {hint}")
+        elif acronym in possible:
+            lines.append(f"-- {acronym:<16}-- {possible[acronym]}")
         else:
             lines.append(f"-- {acronym}")
+    roles = inferred_roles(profile, database)
+    initiated = {service for service, role in roles if role == "initiate"}
+    executed = (set(profile.services_supported) - (initiated & _INITIATE_ONLY_WHEN_INFERRED)) | {
+        service for service, role in roles if role == "execute"
+    }
     lines += [
         "}",
         "",
         "BACnet Standard Application Services Supported:",
         "{",
-        "-- Execute is from Protocol_Services_Supported; add Initiate where supported.",
-        "-- I-Am, I-Have (with Who-Has) and Who-Am-I (with You-Are) Initiate are inferred.",
+        "-- Execute is from Protocol_Services_Supported. Initiate is inferred from",
+        "-- suggested BIBBs and from Device properties: each time-synchronization",
+        "-- recipient list, restart-notification-recipients, and a Notification Class",
+        "-- object. I-Am is always inferred. Who-Am-I Initiate and Who-Is Execute",
+        "-- follow You-Are.",
     ]
-    initiated = {"i-am"} | ({"i-have"} if profile.supports_service("who-has") else set())
-    executed = set(profile.services_supported) - initiated
-    # A device that executes You-Are is one whose identity is assigned by another device:
-    # it asks with Who-Am-I and, to be discoverable, answers Who-Is.
-    if profile.supports_service("you-are"):
-        initiated.add("who-am-i")
-        executed.add("who-is")
     for service in sorted(initiated | executed, key=service_epics_name):
-        roles = (["Initiate"] if service in initiated else []) + (["Execute"] if service in executed else [])
-        lines.append(f"{service_epics_name(service)} {' '.join(roles)}")
+        words = (["Initiate"] if service in initiated else []) + (["Execute"] if service in executed else [])
+        lines.append(f"{service_epics_name(service)} {' '.join(words)}")
     lines += ["}", "", "Standard Object Types Supported:", "{"]
     types = set(profile.object_types_supported) | {r.object_type for r in database.objects.values()}
     for object_type in sorted(t for t in types if canonical_object_type(t)):

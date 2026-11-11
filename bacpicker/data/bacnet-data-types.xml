@@ -4450,8 +4450,14 @@ This clause consists of an ASN.1 module that defines the BACnet APDUs and all ne
                 <Unsigned name="authentication-policy-list" value="258"/>
                 <Unsigned name="authentication-policy-names" value="259"/>
                 <Unsigned name="authentication-status" value="260"/>
+                <Unsigned name="authorization-cache" value="4194343"/>
                 <Unsigned name="authorization-exemptions" value="364"/>
+                <Unsigned name="authorization-groups" value="4194344"/>
                 <Unsigned name="authorization-mode" value="261"/>
+                <Unsigned name="authorization-policy" value="4194345"/>
+                <Unsigned name="authorization-scope" value="4194346"/>
+                <Unsigned name="authorization-server" value="4194347"/>
+                <Unsigned name="authorization-status" value="4194348"/>
                 <Unsigned name="auto-subordinate-discovery" value="169"/>
                 <Unsigned name="average-value" value="125"/>
                 <Unsigned name="backup-and-restore-state" value="338"/>
@@ -4524,6 +4530,7 @@ This clause consists of an ASN.1 module that defines the BACnet APDUs and all ne
                 <Unsigned name="default-color" value="4194330"/>
                 <Unsigned name="default-color-temperature" value="4194331"/>
                 <Unsigned name="default-fade-time" value="374"/>
+                <Unsigned name="default-on-value" value="4194341"/>
                 <Unsigned name="default-present-value" value="492"/>
                 <Unsigned name="default-ramp-rate" value="375"/>
                 <Unsigned name="default-step-increment" value="376"/>
@@ -4536,6 +4543,9 @@ This clause consists of an ASN.1 module that defines the BACnet APDUs and all ne
                 <Unsigned name="description" value="28"/>
                 <Unsigned name="description-of-halt" value="29"/>
                 <Unsigned name="device-address-binding" value="30"/>
+                <Unsigned name="device-address-proxy-enable" value="4194338"/>
+                <Unsigned name="device-address-proxy-table" value="4194339"/>
+                <Unsigned name="device-address-proxy-timeout" value="4194340"/>
                 <Unsigned name="device-type" value="31"/>
                 <Unsigned name="device-uuid" value="507"/>
                 <Unsigned name="direct-reading" value="156"/>
@@ -4644,6 +4654,7 @@ This clause consists of an ASN.1 module that defines the BACnet APDUs and all ne
                 <Unsigned name="last-credential-removed" value="279"/>
                 <Unsigned name="last-credential-removed-time" value="280"/>
                 <Unsigned name="last-notify-record" value="173"/>
+                <Unsigned name="last-on-value" value="4194342"/>
                 <Unsigned name="last-priority" value="369"/>
                 <Unsigned name="last-restart-reason" value="196"/>
                 <Unsigned name="last-restore-time" value="157"/>
@@ -4691,6 +4702,7 @@ This clause consists of an ASN.1 module that defines the BACnet APDUs and all ne
                 <Unsigned name="max-manager" value="64"/>
                 <Unsigned name="max-npdu-length-accepted" value="4194305"/>
                 <Unsigned name="max-pres-value" value="65"/>
+                <Unsigned name="max-proxied-i-ams-per-second" value="4194349"/>
                 <Unsigned name="max-segments-accepted" value="167"/>
                 <Unsigned name="maximum-output" value="61"/>
                 <Unsigned name="maximum-send-delay" value="503"/>
@@ -5421,6 +5433,19 @@ This clause consists of an ASN.1 module that defines the BACnet APDUs and all ne
                 <!-- see high-end-trim		(4194335), -->
                 <!-- see low-end-trim		(4194336), -->
                 <!-- see trim-fade-time		(4194337) -->
+                <!-- 135-2024 Clause 21, not yet in ASHRAE CSML dataRev 24 -->
+                <!-- see device-address-proxy-enable	(4194338), -->
+                <!-- see device-address-proxy-table	(4194339), -->
+                <!-- see device-address-proxy-timeout	(4194340), -->
+                <!-- see default-on-value		(4194341), -->
+                <!-- see last-on-value		(4194342), -->
+                <!-- see authorization-cache		(4194343), -->
+                <!-- see authorization-groups		(4194344), -->
+                <!-- see authorization-policy		(4194345), -->
+                <!-- see authorization-scope		(4194346), -->
+                <!-- see authorization-server		(4194347), -->
+                <!-- see authorization-status		(4194348), -->
+                <!-- see max-proxied-i-ams-per-second	(4194349) -->
             </NamedValues>
         </Enumerated>
 

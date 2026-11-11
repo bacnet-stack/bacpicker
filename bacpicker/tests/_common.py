@@ -557,6 +557,11 @@ async def writable_properties(ctx: TestContext, objid: ObjectIdentifier) -> List
     database = await ctx.test_database()
     record = database.objects.get(objid)
     if record is not None:
+        # A conformance-code W property the device does not have is not writable here.
+        # A whole-array read can fail because the value is too large; the property is
+        # still present and an indexed read may succeed.
+        present = {name for name, prop in record.properties.items() if prop.present}
+        names &= present
         for name, prop in record.properties.items():
             if prop.writable is True:
                 names.add(name)
@@ -581,6 +586,16 @@ def read_only_property(ctx: TestContext) -> Tuple[ObjectIdentifier, str, Any]:
     raise SkipTest("no read-only standard property is known for the IUT's object types")
 
 
+def property_is_present(ctx: TestContext, objid, name: str) -> bool:
+    """True when the property was read from the IUT, or when the test database is not loaded yet."""
+    database = ctx.shared.get("database")
+    if database is None:
+        return True
+    record = database.objects.get(objid)
+    prop = record.properties.get(name) if record is not None else None
+    return prop is not None and prop.error is None
+
+
 def ranged_property(ctx: TestContext):
     """(objid, property name, minimum, maximum) for a writable property with a numeric range."""
     for objid in ctx.test_objects():
@@ -591,6 +606,8 @@ def ranged_property(ctx: TestContext):
             if not prop.writable:
                 continue
             if prop.minimum is None and prop.maximum is None:
+                continue
+            if not property_is_present(ctx, objid, prop.name):
                 continue
             return objid, prop.name, prop.minimum, prop.maximum
     return None

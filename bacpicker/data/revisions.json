@@ -72,7 +72,17 @@
   "you-are": {"revision": 22, "source": "Add Who-Am-I and You-Are Services", "verified": true}
  },
  "properties_required_since": {
-  "property-list": {"revision": 14, "source": "135.1-2023 clause 5(n)", "verified": true}
+  "property-list": {"revision": 14, "source": "135.1-2023 clause 5(n)", "verified": true},
+  "last-on-value": {
+    "revision": 28,
+    "source": "Addendum cj to 135-2020 (Protocol_Revision 28): Add a method for restoring luminaire levels",
+    "verified": true
+  },
+  "default-on-value": {
+    "revision": 28,
+    "source": "Addendum cj to 135-2020 (Protocol_Revision 28): Add a method for restoring luminaire levels",
+    "verified": true
+  }
  },
  "properties_removed": {}
 }

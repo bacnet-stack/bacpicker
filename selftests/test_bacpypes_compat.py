@@ -5,9 +5,17 @@ from __future__ import annotations
 
 from bacpypes3.basetypes import ChannelValue, ObjectTypesSupported, ReadAccessResultElement
 from bacpypes3.local.object import Object as LocalObject
-from bacpypes3.object import LightingOutputObject
+from bacpypes3.object import DeviceObject, LightingOutputObject, NetworkPortObject
 from bacpypes3.pdu import PDUData
-from bacpypes3.primitivedata import ObjectIdentifier, ObjectType, PropertyIdentifier, TagList
+from bacpypes3.primitivedata import (
+    Boolean,
+    ObjectIdentifier,
+    ObjectType,
+    PropertyIdentifier,
+    Real,
+    TagList,
+    Unsigned,
+)
 from bacpypes3.vendor import get_vendor_info
 from test_end_to_end import run_suite
 from test_epics import generate
@@ -46,6 +54,10 @@ def test_names():
     assert str(ObjectType(64)) == "color-temperature"
     assert PropertyIdentifier("color-command") == 4194334
     assert str(PropertyIdentifier(4194331)) == "default-color-temperature"
+    assert PropertyIdentifier("max-proxied-i-ams-per-second") == 4194349
+    assert str(PropertyIdentifier(4194349)) == "max-proxied-i-ams-per-second"
+    assert str(PropertyIdentifier(4194341)) == "default-on-value"
+    assert str(PropertyIdentifier(4194339)) == "device-address-proxy-table"
     # bit names set the encoded length, which must stay at Protocol_Revision 22's 63 bits
     assert ObjectTypesSupported._bitstring_length == 63
     assert str(ColorOperation(4)) == "step-up-cct"
@@ -64,6 +76,11 @@ def test_object_classes():
     assert ColorObject.get_property_type("present-value") is XYColor
     assert ColorTemperatureObject.get_property_type("color-command") is ColorCommand
     assert LightingOutputObject.get_property_type("color-reference") is not None
+    assert LightingOutputObject.get_property_type("last-on-value") is Real
+    assert LightingOutputObject.get_property_type("default-on-value") is Real
+    assert NetworkPortObject.get_property_type("device-address-proxy-enable") is Boolean
+    assert NetworkPortObject.get_property_type("device-address-proxy-timeout") is Unsigned
+    assert DeviceObject.get_property_type("max-proxied-i-ams-per-second") is Unsigned
 
 
 def test_encoding():

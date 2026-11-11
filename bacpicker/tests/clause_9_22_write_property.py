@@ -19,6 +19,7 @@ from ._common import (
     expect_simple_ack,
     is_array,
     priority_slot_value,
+    property_is_present,
     ranged_property,
     read_only_property,
     restore,
@@ -44,7 +45,9 @@ def _writable_scalar(ctx: TestContext) -> Optional[Tuple[ObjectIdentifier, str, 
         if spec is None:
             continue
         for prop in spec.properties:
-            if prop.writable and not prop.commandable and not is_array(ctx.property_type(objid, prop.name)):
+            if not prop.writable or prop.commandable or not property_is_present(ctx, objid, prop.name):
+                continue
+            if not is_array(ctx.property_type(objid, prop.name)):
                 return objid, prop.name, None
     return None
 
@@ -137,6 +140,7 @@ async def writing_commandable_without_priority(ctx: TestContext) -> None:
     "9.22.1.3", "Writing a Non-Commandable Property with a Priority", services=SERVICE, writes=True
 )
 async def writing_non_commandable_with_priority(ctx: TestContext) -> None:
+    await ctx.test_database()
     target = _writable_scalar(ctx)
     if target is None:
         ctx.skip("no non-commandable writable scalar property is defined for the IUT")
@@ -265,6 +269,7 @@ async def writing_wrong_datatype(ctx: TestContext) -> None:
 
 @conformance_test("9.22.2.4", "Writing with a Property Value that is Out of Range", services=SERVICE)
 async def writing_out_of_range(ctx: TestContext) -> None:
+    await ctx.test_database()
     found = ranged_property(ctx)
     if found is None:
         ctx.skip("no writable property with a restricted range is defined for the IUT")
