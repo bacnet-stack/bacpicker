@@ -558,7 +558,9 @@ async def writable_properties(ctx: TestContext, objid: ObjectIdentifier) -> List
     record = database.objects.get(objid)
     if record is not None:
         # A conformance-code W property the device does not have is not writable here.
-        present = {name for name, prop in record.properties.items() if prop.error is None}
+        # A whole-array read can fail because the value is too large; the property is
+        # still present and an indexed read may succeed.
+        present = {name for name, prop in record.properties.items() if prop.present}
         names &= present
         for name, prop in record.properties.items():
             if prop.writable is True:
