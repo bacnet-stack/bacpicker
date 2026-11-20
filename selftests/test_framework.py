@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import csv
 import io
 from types import SimpleNamespace
 
@@ -15,6 +16,7 @@ from bacpicker.database import ObjectRecord, PropertyRecord, TestDatabase
 from bacpicker.iut import broadcast_listen_address
 from bacpicker.registry import TestCase, clause_sort_key
 from bacpicker.reporting.console import ConsoleReporter
+from bacpicker.reporting.csv_report import CsvReporter
 from bacpicker.reporting.markdown_html import render_html, render_markdown
 from bacpicker.result import Status, TestResult
 from bacpicker.runner import Runner, filter_tests, order_tests
@@ -92,7 +94,7 @@ async def test_defects_fail_and_exceptions_error():
     assert blocked.status is Status.SKIP and "9.1" in (blocked.reason or "")
 
 
-async def test_reporters_render_defects():
+async def test_reporters_render_defects(tmp_path):
     async def failing(ctx):
         ctx.step("compare")
         ctx.check_equal("<a>", "b", "values differ")
@@ -105,6 +107,11 @@ async def test_reporters_render_defects():
     assert "values differ" in render_markdown(report)
     html = render_html(report)
     assert "&lt;a&gt;" in html and "<a>" not in html
+    CsvReporter(tmp_path / "report.csv").finish(report)
+    with (tmp_path / "report.csv").open(encoding="utf-8-sig", newline="") as stream:
+        (row,) = csv.DictReader(stream)
+    assert (row["clause"], row["status"], row["defects"]) == ("9.1", "FAIL", "1")
+    assert row["details"].splitlines()[:2] == ["[9.1] values differ", "  step: compare"]
 
 
 def test_broadcast_listen_address_per_platform():

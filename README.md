@@ -127,8 +127,8 @@ Options:
 | `--max-objects` | Maximum objects visited by tests that walk the Object_List (default 50) |
 | `--list-tests` | List the registered tests and exit |
 | `--list-devices` | Send a global Who-Is, list discovered devices, and exit |
-| `-r, --report` | `console`, `json`, `junit`, `markdown`, `html`, `epics` (repeatable; default `console`) |
-| `-o, --output-dir` | Directory for report files (default `reports`): `report.json`, `report.junit.xml`, `report.md`, `report.html`, `report.epics` |
+| `-r, --report` | `console`, `json`, `junit`, `markdown`, `html`, `csv`, `epics` (repeatable; default `console`) |
+| `-o, --output-dir` | Directory for report files (default `reports`): `report.json`, `report.junit.xml`, `report.md`, `report.html`, `report.csv`, `report.epics` |
 | `-v, --verbose` / `--debug` | Show test steps / log protocol traffic |
 | `--version` | Print the version and exit |
 

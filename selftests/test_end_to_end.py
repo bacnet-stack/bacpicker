@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import xml.etree.ElementTree as ET
 
@@ -17,7 +18,7 @@ async def run_suite(config, tmp_path=None, include=None, epics=None):
     if include:
         config.include = include
     if tmp_path is not None:
-        config.report_formats = ["json", "junit", "markdown", "html"]
+        config.report_formats = ["json", "junit", "markdown", "html", "csv"]
         config.output_dir = tmp_path
     app = build_application(config)
     try:
@@ -69,6 +70,9 @@ async def test_full_suite_against_simulated_device(loopback_config, tmp_path):
     assert suite.get("tests") == str(len(report.results))
     assert "9.18.1.1" in (tmp_path / "report.md").read_text()
     assert "<html>" in (tmp_path / "report.html").read_text()
+    with (tmp_path / "report.csv").open(encoding="utf-8-sig", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    assert [row["clause"] for row in rows] == [r.clause for r in report.results]
 
 
 async def test_write_tests_restore_iut(loopback_config, simulated_iut):
