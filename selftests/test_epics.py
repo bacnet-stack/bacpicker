@@ -6,6 +6,7 @@ from __future__ import annotations
 from bacpypes3.basetypes import PropertyIdentifier
 from bacpypes3.constructeddata import ArrayOf
 from bacpypes3.local.object import Object as LocalObject
+from bacpypes3.object import DeviceObject
 from bacpypes3.primitivedata import CharacterString, ObjectIdentifier, ObjectType
 from test_end_to_end import run_suite
 from test_framework import make_profile
@@ -318,6 +319,7 @@ def test_bacpypes3_uses_the_csml_property_names():
     for value, name in property_identifiers().items():
         assert PropertyIdentifier(name) == value, name
         assert str(PropertyIdentifier(value)) == name
+    assert DeviceObject.get_property_type("authorization-scope") is not None
 
 
 def test_device_address_proxy_table_suggests_dm_dap_b(tmp_path):

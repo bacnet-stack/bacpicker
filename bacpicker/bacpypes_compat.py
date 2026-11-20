@@ -5,7 +5,8 @@
 
 bacpicker names properties from its CSML data, and passes those names back to BACpypes3.
 BACpypes3 0.1.0 spells 4194346 "authorization-scopes", while 135-2024 Clause 21 and the
-CSML data spell it "authorization-scope", so the standard name is mapped here.
+CSML data spell it "authorization-scope", so the standard name is mapped here. The
+BACpypes3 attribute name is kept, because object classes look up property types by it.
 """
 
 from __future__ import annotations
@@ -25,7 +26,6 @@ def _add_name(cls: Any, attr: str, value: int) -> None:
     name = attr_to_asn1(attr)
     cls._enum_map[attr] = value
     cls._enum_map[name] = value
-    cls._attr_map[value] = attr
     cls._asn1_map[value] = name
 
 
