@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clauses 5(k) and 5(l) count AuthRequest (Protocol_Revision 29, Addendum cp to
+  135-2020), and DirectoryQuery and the Directory object type (Protocol_Revision 31,
+  Addendum cs to 135-2020), so a revision 31 device has 51 service bits and 66
+  object type bits.
 - The property-identifier map includes 135-2024 Clause 21 identifiers 4194338–4194349,
   which ASHRAE CSML dataRev 24 does not yet publish. Device, Network Port, and
   Lighting Output include the properties Clause 12 assigns to them, so a live read

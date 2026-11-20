@@ -17,7 +17,7 @@ from bacpicker.iut import build_application, build_profile, discover_iut
 from bacpicker.registry import get_test
 from bacpicker.result import Status
 from bacpicker.runner import Runner
-from bacpicker.standard import object_spec, property_identifiers
+from bacpicker.standard import defined_bits, object_spec, property_identifiers
 
 
 async def generate(config, path):
@@ -79,6 +79,14 @@ async def test_generated_epics_round_trip(loopback_config, tmp_path):
         "NM-RC-B",
         "SCHED-I-B",
     ]
+
+
+def test_bit_lengths_include_bits_newer_than_the_csml_data():
+    assert defined_bits("services", 28) == (49, True)
+    assert defined_bits("services", 29) == (50, True)
+    assert defined_bits("services", 31) == (51, True)
+    assert defined_bits("object_types", 30) == (65, True)
+    assert defined_bits("object_types", 31) == (66, True)
 
 
 def test_ds_rp_b_stays_uncommented_when_read_property_is_not_inferred(tmp_path):

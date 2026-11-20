@@ -224,12 +224,18 @@ def defined_bits(kind: str, revision: int) -> Tuple[int, bool]:
     count = data["baseline"][f"{kind}_bits"]
     verified = True
     for name, entry in data[kind].items():
-        name = (canonical_object_type if kind == "object_types" else canonical_service)(name)
-        if entry["revision"] <= revision and name in names:
-            bit = names[name] + 1
-            if bit > count:
-                count = bit
-                verified = entry["verified"]
+        if entry["revision"] > revision:
+            continue
+        canonical = (canonical_object_type if kind == "object_types" else canonical_service)(name)
+        if canonical in names:
+            bit = names[canonical] + 1
+        elif "bit" in entry:
+            bit = entry["bit"] + 1
+        else:
+            continue
+        if bit > count:
+            count = bit
+            verified = entry["verified"]
     return count, verified
 
 
