@@ -329,7 +329,7 @@ async def unsubscribed_cov(ctx: TestContext) -> None:
         initiatingDeviceIdentifier=ctx.app.device_object.objectIdentifier,
         monitoredObjectIdentifier=ctx.app.device_object.objectIdentifier,
         timeRemaining=0,
-        listOfValues=[PropertyValue(propertyIdentifier="system-status", value=Unsigned(0))],
+        listOfValues=[PropertyValue(propertyIdentifier="system-status", propertyValue=Unsigned(0))],
         destination=ctx.iut.address,
     )
     await ctx.app.request(request)

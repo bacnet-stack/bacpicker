@@ -1,5 +1,5 @@
 {
- "_comment": "Protocol_Revision in which object types, services and property requirements were introduced. Source: ANSI/ASHRAE 135-2024 'History of Revisions' unless noted. Entries with verified=false are not explicitly stated there and only produce notes, never defects.",
+ "_comment": "Protocol_Revision in which object types, services and property requirements were introduced. Source: ANSI/ASHRAE 135-2024 'History of Revisions' unless noted. Entries with verified=false are not explicitly stated there and only produce notes, never defects. 'bit' gives the bit position of entries newer than the CSML data in this folder.",
  "baseline": {
   "revision": 0,
   "object_types_bits": 18,
@@ -53,7 +53,8 @@
   "audit-log": {"revision": 20, "source": "Add Audit Reporting", "verified": true},
   "audit-reporter": {"revision": 20, "source": "Add Audit Reporting", "verified": true},
   "color": {"revision": 24, "source": "Add new Color object type", "verified": true},
-  "color-temperature": {"revision": 24, "source": "Add new Color Temperature object type", "verified": true}
+  "color-temperature": {"revision": 24, "source": "Add new Color Temperature object type", "verified": true},
+  "directory": {"revision": 31, "bit": 65, "source": "Addendum cs to 135-2020: BACnet Directory Services", "verified": true}
  },
  "services": {
   "read-range": {"revision": 1, "source": "Addendum b to 135-1995: A new ReadRange service is added", "verified": true},
@@ -69,7 +70,9 @@
   "audit-log-query": {"revision": 20, "source": "Add Audit Reporting", "verified": true},
   "unconfirmed-audit-notification": {"revision": 20, "source": "Add Audit Reporting", "verified": true},
   "who-amI": {"revision": 22, "source": "Add Who-Am-I and You-Are Services", "verified": true},
-  "you-are": {"revision": 22, "source": "Add Who-Am-I and You-Are Services", "verified": true}
+  "you-are": {"revision": 22, "source": "Add Who-Am-I and You-Are Services", "verified": true},
+  "auth-request": {"revision": 29, "bit": 49, "source": "Addendum cp to 135-2020: Addition of Authentication and Authorization", "verified": true},
+  "directory-query": {"revision": 31, "bit": 50, "source": "Addendum cs to 135-2020: BACnet Directory Services", "verified": true}
  },
  "properties_required_since": {
   "property-list": {"revision": 14, "source": "135.1-2023 clause 5(n)", "verified": true},

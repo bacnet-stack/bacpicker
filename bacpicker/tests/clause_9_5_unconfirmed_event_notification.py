@@ -29,7 +29,7 @@ def _request(
         processIdentifier=1,
         initiatingDeviceIdentifier=ctx.app.device_object.objectIdentifier,
         eventObjectIdentifier=ObjectIdentifier("event-enrollment,1"),
-        timeStamp=TimeStamp(time=Time((0, 0, 0, 0))),
+        timestamp=TimeStamp(time=Time((0, 0, 0, 0))),
         notificationClass=1,
         priority=100,
         eventType="change-of-state",

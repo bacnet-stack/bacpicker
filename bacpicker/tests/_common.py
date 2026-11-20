@@ -71,7 +71,7 @@ def rpm_request(ctx: TestContext, specs: AccessSpecs) -> ReadPropertyMultipleReq
             ReadAccessSpecification(objectIdentifier=objid, listOfPropertyReferences=refs)
         )
     return ReadPropertyMultipleRequest(
-        listOfReadAccessSpecs=SequenceOf(ReadAccessSpecification)(access_specs),
+        listOfReadAccessSpecifications=SequenceOf(ReadAccessSpecification)(access_specs),
         destination=ctx.iut.address,
     )
 
@@ -470,7 +470,7 @@ def _property_value(
 ) -> PropertyValue:
     item = PropertyValue(
         propertyIdentifier=PropertyIdentifier(prop),
-        value=cast_property(ctx, objid, prop, value, index) if cast else value,
+        propertyValue=cast_property(ctx, objid, prop, value, index) if cast else value,
     )
     if index is not None:
         item.propertyArrayIndex = index
@@ -500,7 +500,7 @@ def wpm_request(
             )
         )
     return WritePropertyMultipleRequest(
-        listOfWriteAccessSpecs=SequenceOf(WriteAccessSpecification)(specs),
+        listOfWriteAccessSpecifications=SequenceOf(WriteAccessSpecification)(specs),
         destination=ctx.iut.address,
     )
 

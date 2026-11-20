@@ -37,12 +37,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Protocol_Revision history; `tools/extract_bibbs.py` to regenerate the BIBB tables.
 - Self-test suite running the tool end to end against a simulated BACpypes3 device.
 - Color and Color Temperature object support (types 63 and 64, and the Lighting Output
-  color properties) added at import for BACpypes3 releases that lack it.
+  color properties), provided by BACpypes3 0.1.0.
 - GitHub Actions workflows for the self-tests, Ruff, Pyright and CodeQL.
 - `CONTRIBUTING.md`.
 
 ### Changed
 
+- Requires BACpypes3 0.1.0 or later, which uses the CSML protocol revision 31 names.
+  The BACpypes3 shim now only maps `authorization-scope` (4194346), which BACpypes3
+  spells `authorization-scopes`, to its 135-2024 Clause 21 name.
+- Clauses 5(k) and 5(l) count AuthRequest (Protocol_Revision 29, Addendum cp to
+  135-2020), and DirectoryQuery and the Directory object type (Protocol_Revision 31,
+  Addendum cs to 135-2020), so a revision 31 device has 51 service bits and 66
+  object type bits.
 - The property-identifier map includes 135-2024 Clause 21 identifiers 4194338–4194349,
   which ASHRAE CSML dataRev 24 does not yet publish. Device, Network Port, and
   Lighting Output include the properties Clause 12 assigns to them, so a live read

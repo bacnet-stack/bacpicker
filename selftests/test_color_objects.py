@@ -3,30 +3,14 @@
 
 from __future__ import annotations
 
-from bacpypes3.basetypes import ChannelValue, ObjectTypesSupported, ReadAccessResultElement
+from bacpypes3.basetypes import ChannelValue, ColorCommand, ColorOperation, XYColor
 from bacpypes3.local.object import Object as LocalObject
-from bacpypes3.object import DeviceObject, LightingOutputObject, NetworkPortObject
+from bacpypes3.object import ColorObject, ColorTemperatureObject
 from bacpypes3.pdu import PDUData
-from bacpypes3.primitivedata import (
-    Boolean,
-    ObjectIdentifier,
-    ObjectType,
-    PropertyIdentifier,
-    Real,
-    TagList,
-    Unsigned,
-)
-from bacpypes3.vendor import get_vendor_info
+from bacpypes3.primitivedata import ObjectIdentifier, TagList
 from test_end_to_end import run_suite
 from test_epics import generate
 
-from bacpicker.bacpypes_compat import (
-    ColorCommand,
-    ColorObject,
-    ColorOperation,
-    ColorTemperatureObject,
-    XYColor,
-)
 from bacpicker.database import read_database
 from bacpicker.epics import format_value, parse_epics
 from bacpicker.iut import build_application, build_profile, discover_iut
@@ -34,11 +18,12 @@ from bacpicker.result import Status
 
 
 class LocalColorObject(LocalObject, ColorObject):
-    pass
+    # bacpypes3 local objects look up Notification_Class after creation, which these lack
+    notificationClass = None
 
 
 class LocalColorTemperatureObject(LocalObject, ColorTemperatureObject):
-    pass
+    notificationClass = None
 
 
 def round_trip(cls, value, data_hex):
@@ -47,40 +32,6 @@ def round_trip(cls, value, data_hex):
     decoded = cls.decode(TagList.decode(PDUData(data)))
     assert decoded.encode().encode().pduData == data
     return decoded
-
-
-def test_names():
-    assert ObjectType("color") == 63
-    assert str(ObjectType(64)) == "color-temperature"
-    assert PropertyIdentifier("color-command") == 4194334
-    assert str(PropertyIdentifier(4194331)) == "default-color-temperature"
-    assert PropertyIdentifier("max-proxied-i-ams-per-second") == 4194349
-    assert str(PropertyIdentifier(4194349)) == "max-proxied-i-ams-per-second"
-    assert str(PropertyIdentifier(4194341)) == "default-on-value"
-    assert str(PropertyIdentifier(4194339)) == "device-address-proxy-table"
-    # bit names set the encoded length, which must stay at Protocol_Revision 22's 63 bits
-    assert ObjectTypesSupported._bitstring_length == 63
-    assert str(ColorOperation(4)) == "step-up-cct"
-    # context-tagged fields are Enumerated subclasses created before the names were added
-    property_class = ReadAccessResultElement._elements["propertyIdentifier"]
-    assert property_class is not PropertyIdentifier
-    assert str(property_class(4194328)) == "color-override"
-    object_type_class = ObjectIdentifier("color,1").object_type_class
-    assert str(object_type_class(63)) == "color"
-
-
-def test_object_classes():
-    vendor_info = get_vendor_info(0)
-    assert vendor_info.get_object_class(63) is ColorObject
-    assert vendor_info.get_object_class(64) is ColorTemperatureObject
-    assert ColorObject.get_property_type("present-value") is XYColor
-    assert ColorTemperatureObject.get_property_type("color-command") is ColorCommand
-    assert LightingOutputObject.get_property_type("color-reference") is not None
-    assert LightingOutputObject.get_property_type("last-on-value") is Real
-    assert LightingOutputObject.get_property_type("default-on-value") is Real
-    assert NetworkPortObject.get_property_type("device-address-proxy-enable") is Boolean
-    assert NetworkPortObject.get_property_type("device-address-proxy-timeout") is Unsigned
-    assert DeviceObject.get_property_type("max-proxied-i-ams-per-second") is Unsigned
 
 
 def test_encoding():
@@ -100,7 +51,7 @@ def test_encoding():
         ChannelValue, ChannelValue(colorCommand=command), "2e 09 01 1e 44 3f000000 44 3e800000 1f 3a 03e8 2f"
     )
     assert value.colorCommand.fadeTime == 1000
-    assert getattr(value, "xyColor", None) is None
+    assert value.xycolor is None
 
 
 async def test_color_objects_read_and_match_epics(simulated_iut, loopback_config, tmp_path):

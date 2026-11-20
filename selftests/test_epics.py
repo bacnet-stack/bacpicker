@@ -6,6 +6,7 @@ from __future__ import annotations
 from bacpypes3.basetypes import PropertyIdentifier
 from bacpypes3.constructeddata import ArrayOf
 from bacpypes3.local.object import Object as LocalObject
+from bacpypes3.object import DeviceObject
 from bacpypes3.primitivedata import CharacterString, ObjectIdentifier, ObjectType
 from test_end_to_end import run_suite
 from test_framework import make_profile
@@ -17,7 +18,7 @@ from bacpicker.iut import build_application, build_profile, discover_iut
 from bacpicker.registry import get_test
 from bacpicker.result import Status
 from bacpicker.runner import Runner
-from bacpicker.standard import object_spec, property_identifiers
+from bacpicker.standard import defined_bits, object_spec, property_identifiers
 
 
 async def generate(config, path):
@@ -79,6 +80,14 @@ async def test_generated_epics_round_trip(loopback_config, tmp_path):
         "NM-RC-B",
         "SCHED-I-B",
     ]
+
+
+def test_bit_lengths_include_bits_newer_than_the_csml_data():
+    assert defined_bits("services", 28) == (49, True)
+    assert defined_bits("services", 29) == (50, True)
+    assert defined_bits("services", 31) == (51, True)
+    assert defined_bits("object_types", 30) == (65, True)
+    assert defined_bits("object_types", 31) == (66, True)
 
 
 def test_ds_rp_b_stays_uncommented_when_read_property_is_not_inferred(tmp_path):
@@ -304,6 +313,13 @@ def test_proxy_bibbs_stay_commented_without_proxy_properties(tmp_path):
     assert not any(line.startswith("DM-SP-B ") or line.startswith("DM-DAP-B ") for line in lines)
     assert "ReadProperty Execute" in lines
     assert "ReadProperty Initiate" not in lines
+
+
+def test_bacpypes3_uses_the_csml_property_names():
+    for value, name in property_identifiers().items():
+        assert PropertyIdentifier(name) == value, name
+        assert str(PropertyIdentifier(value)) == name
+    assert DeviceObject.get_property_type("authorization-scope") is not None
 
 
 def test_device_address_proxy_table_suggests_dm_dap_b(tmp_path):
