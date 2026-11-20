@@ -314,6 +314,12 @@ def test_proxy_bibbs_stay_commented_without_proxy_properties(tmp_path):
     assert "ReadProperty Initiate" not in lines
 
 
+def test_bacpypes3_uses_the_csml_property_names():
+    for value, name in property_identifiers().items():
+        assert PropertyIdentifier(name) == value, name
+        assert str(PropertyIdentifier(value)) == name
+
+
 def test_device_address_proxy_table_suggests_dm_dap_b(tmp_path):
     assert property_identifiers()[4194339] == "device-address-proxy-table"
     path = tmp_path / "dap.tpi"

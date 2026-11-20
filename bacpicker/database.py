@@ -119,7 +119,7 @@ async def _read_all(
     app: Any, profile: DeviceProfile, objid: ObjectIdentifier
 ) -> Optional[Dict[str, PropertyRecord]]:
     request = ReadPropertyMultipleRequest(
-        listOfReadAccessSpecs=SequenceOf(ReadAccessSpecification)(
+        listOfReadAccessSpecifications=SequenceOf(ReadAccessSpecification)(
             [
                 ReadAccessSpecification(
                     objectIdentifier=objid,

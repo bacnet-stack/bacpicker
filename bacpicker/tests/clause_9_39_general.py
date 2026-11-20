@@ -135,7 +135,7 @@ def _event(ctx: TestContext, confirmed: bool):
         processIdentifier=1,
         initiatingDeviceIdentifier=ctx.app.device_object.objectIdentifier,
         eventObjectIdentifier=ObjectIdentifier("event-enrollment,1"),
-        timeStamp=_stamp(),
+        timestamp=_stamp(),
         notificationClass=1,
         priority=100,
         eventType="change-of-state",
@@ -181,7 +181,7 @@ def _minimal_confirmed(ctx: TestContext, choice: int, object_name: str) -> APDU:
             acknowledgingProcessIdentifier=1,
             eventObjectIdentifier=device,
             eventStateAcknowledged="normal",
-            timeStamp=_stamp(),
+            timestamp=_stamp(),
             acknowledgmentSource=CharacterString("TD"),
             timeOfAcknowledgment=_stamp(),
         )
@@ -191,7 +191,7 @@ def _minimal_confirmed(ctx: TestContext, choice: int, object_name: str) -> APDU:
             initiatingDeviceIdentifier=td,
             monitoredObjectIdentifier=device,
             timeRemaining=0,
-            listOfValues=[PropertyValue(propertyIdentifier="present-value", value=Unsigned(0))],
+            listOfValues=[PropertyValue(propertyIdentifier="present-value", propertyValue=Unsigned(0))],
         )
     elif choice == 2:
         return _event(ctx, True)
@@ -223,11 +223,11 @@ def _minimal_confirmed(ctx: TestContext, choice: int, object_name: str) -> APDU:
         return rpm_request(ctx, [(device, ["object-name"])])
     elif choice == 16:
         built = WritePropertyMultipleRequest(
-            listOfWriteAccessSpecs=[
+            listOfWriteAccessSpecifications=[
                 WriteAccessSpecification(
                     objectIdentifier=device,
                     listOfProperties=[PropertyValue(propertyIdentifier="object-name",
-                        value=CharacterString(object_name))],
+                        propertyValue=CharacterString(object_name))],
                 )
             ]
         )

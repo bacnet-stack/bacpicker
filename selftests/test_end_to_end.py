@@ -113,8 +113,6 @@ KNOWN_SIMULATOR_DEFECTS = {
     "9.18.1.3": "no support for the Device 4194303 wildcard instance",
     "9.18.1.6": "aborts with APDU_TOO_LONG instead of BUFFER_OVERFLOW",
     "9.18.1.8": "no support for the Network Port 4194303 wildcard instance",
-    "9.20.1.8": "Network Port Link_Speed (optional in 135-2024) is not returned for OPTIONAL",
-    "9.20.1.9": "Network Port Link_Speed (optional in 135-2024) is returned for REQUIRED",
     "9.20.1.11": "no support for the Device 4194303 wildcard instance",
     "9.20.1.14": "no support for the Network Port 4194303 wildcard instance",
     "9.22.2.6": "WriteProperty of an unknown property returns DEVICE / OPERATIONAL_PROBLEM",

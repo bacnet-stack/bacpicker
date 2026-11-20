@@ -33,7 +33,7 @@ def _request(ctx: TestContext, stamp: TimeStamp, message: Optional[CharacterStri
         processIdentifier=1,
         initiatingDeviceIdentifier=ctx.app.device_object.objectIdentifier,
         eventObjectIdentifier=ObjectIdentifier("event-enrollment,1"),
-        timeStamp=stamp,
+        timestamp=stamp,
         notificationClass=1,
         priority=100,
         eventType="change-of-state",
@@ -82,7 +82,7 @@ async def time_form_with_message(ctx: TestContext) -> None:
     services=SERVICE,
 )
 async def datetime_form(ctx: TestContext) -> None:
-    stamp = TimeStamp(dateTime=DateTime(date=Date((90, 1, 1, 1)), time=Time((0, 0, 0, 0))))
+    stamp = TimeStamp(datetime=DateTime(date=Date((90, 1, 1, 1)), time=Time((0, 0, 0, 0))))
     await _execute(ctx, _request(ctx, stamp), "DateTime, no Message Text")
 
 
