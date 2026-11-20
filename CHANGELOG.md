@@ -88,5 +88,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The test database also decodes Property_List of proprietary objects, so clause 5(n)
   no longer reports it as missing when the IUT returned it, including when
   ReadPropertyMultiple is unavailable or its ALL request fails.
+- Tests that read properties of proprietary objects no longer error. BACpypes3 returns
+  a "-no object class-" placeholder for those, which clauses 9.20.1.7–9.20.1.9 decoded
+  as a Property_List and failed with `ValueError: -`. The tester now decodes the value
+  with its own common property types.
 
 [Unreleased]: https://github.com/bacnet-stack/bacpicker/commits/default
