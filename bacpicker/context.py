@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, NoReturn, Optional, Set, Tuple
 
-from bacpypes3.apdu import APDU, ErrorRejectAbortNack
+from bacpypes3.apdu import APDU, ErrorRejectAbortNack, ReadPropertyRequest
 from bacpypes3.basetypes import PropertyIdentifier
 from bacpypes3.constructeddata import Array, ArrayOf
 from bacpypes3.pdu import Address, GlobalBroadcast, LocalBroadcast
@@ -53,6 +53,8 @@ FALLBACK_PROPERTY_TYPES = {
     **COMMON_PROPERTY_TYPES,
     "property-list": ArrayOf(PropertyIdentifier),
 }
+# BACpypes3 read_property returns these instead of a value when it has no class or datatype
+_NO_DATATYPE = ("-no object class-", "-no property type-")
 
 
 @dataclass
@@ -314,7 +316,27 @@ class TestContext(AssertionsMixin):
 
     async def read(self, objid: Any, prop: str, array_index: Optional[int] = None) -> Any:
         """Read and decode a property value; Error/Reject/Abort are raised."""
-        return await self.app.read_property(self.iut.address, objid, prop, array_index)
+        value = await self.app.read_property(self.iut.address, objid, prop, array_index)
+        if isinstance(value, str) and value in _NO_DATATYPE:
+            value = await self._read_with_fallback_type(objid, prop, array_index)
+        return value
+
+    async def _read_with_fallback_type(
+        self, objid: Any, prop: Any, array_index: Optional[int]
+    ) -> Any:
+        """Re-read a property BACpypes3 could not decode and decode it with the tester's types.
+
+        The value is returned undecoded (an Any) when the tester has no datatype for it either.
+        """
+        objid = ObjectIdentifier(objid)
+        prop = str(PropertyIdentifier(prop))
+        request = ReadPropertyRequest(
+            objectIdentifier=objid, propertyIdentifier=prop, destination=self.iut.address
+        )
+        if array_index is not None:
+            request.propertyArrayIndex = array_index
+        ack = await self.app.request(request)
+        return self.decode(objid, prop, array_index, ack.propertyValue)
 
     def test_objects(self) -> List[ObjectIdentifier]:
         """Objects to iterate over, limited by --max-objects (device object always first)."""

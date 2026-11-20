@@ -488,6 +488,20 @@ async def test_property_list_kept_without_read_property_multiple(simulated_iut, 
     assert "property-list" in record.properties
 
 
+async def test_reading_all_properties_of_proprietary_object(simulated_iut, loopback_config):
+    app, _address = simulated_iut
+    app.add_object(
+        ConformingPropertyListObject(
+            objectIdentifier=(861, 1), objectName="Vendor Thing", description="thing"
+        )
+    )
+    _profile, report = await run_suite(loopback_config, include=["9.20.1.7"])
+    (result,) = report.results
+    assert result.status in (Status.PASS, Status.FAIL), (result.status, result.reason)
+    messages = [d.message for d in result.defects]
+    assert not any(m.startswith("861,1") for m in messages), messages
+
+
 async def test_restriction_outside_standard_range(loopback_config, tmp_path):
     path = tmp_path / "iut.tpi"
     await generate(loopback_config, path)
