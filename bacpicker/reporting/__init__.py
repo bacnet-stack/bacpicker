@@ -26,11 +26,12 @@ class Reporter:
         pass
 
 
-FORMATS = ("console", "json", "junit", "markdown", "html")
+FORMATS = ("console", "json", "junit", "markdown", "html", "csv")
 
 
 def make_reporters(formats: Sequence[str], output_dir: Path, verbose: bool = False) -> List[Reporter]:
     from .console import ConsoleReporter
+    from .csv_report import CsvReporter
     from .json_report import JsonReporter
     from .junit import JUnitReporter
     from .markdown_html import HtmlReporter, MarkdownReporter
@@ -41,6 +42,7 @@ def make_reporters(formats: Sequence[str], output_dir: Path, verbose: bool = Fal
         "junit": lambda: JUnitReporter(output_dir / "report.junit.xml"),
         "markdown": lambda: MarkdownReporter(output_dir / "report.md"),
         "html": lambda: HtmlReporter(output_dir / "report.html"),
+        "csv": lambda: CsvReporter(output_dir / "report.csv"),
     }
     unknown = [f for f in formats if f not in factories]
     if unknown:

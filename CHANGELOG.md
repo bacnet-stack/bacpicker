@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `-r csv` writes `report.csv` with one row per test (clause, title, status,
+  duration, defect count and details) for spreadsheets.
 - `--list-devices` sends a global Who-Is using the configured local address and BBMD,
   lists the responding devices, and exits without running tests.
 - BACnet/IP conformance test tool based on ANSI/ASHRAE 135.1-2023, built on BACpypes3.
